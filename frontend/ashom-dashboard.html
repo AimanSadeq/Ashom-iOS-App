@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ashom — GCC Financial Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:       #010131;
+    --navy-soft:  #0a0a4a;
+    --blue:       #5391D5;
+    --blue-light: #EAF2FC;
+    --blue-mid:   #C5DEFA;
+    --green:      #00C896;
+    --green-bg:   #E6FAF5;
+    --red:        #FF4B6E;
+    --red-bg:     #FFF0F3;
+    --bg:         #F4F6FB;
+    --card:       #FFFFFF;
+    --border:     #E8ECF4;
+    --text-1:     #010131;
+    --text-2:     #5A6480;
+    --text-3:     #9AA3BD;
+    --font-head:  'Sora', sans-serif;
+    --font-body:  'DM Sans', sans-serif;
+    --r-sm:       10px;
+    --r-md:       16px;
+    --r-lg:       20px;
+    --r-xl:       24px;
+  }
+
+  html { font-size: 16px; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text-1);
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding-bottom: 90px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-brand { display: flex; align-items: center; gap: 10px; }
+  .brand-logo {
+    width: 42px; height: 42px;
+    background: var(--navy);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .brand-logo-text {
+    font-family: 'Sora', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+    direction: rtl;
+  }
+  .brand-text { display: flex; flex-direction: column; }
+  .brand-name {
+    font-family: var(--font-head);
+    font-size: 15px; font-weight: 700;
+    color: var(--navy); letter-spacing: -0.3px;
+  }
+  .brand-sub {
+    font-size: 11px; color: var(--text-3);
+    font-weight: 500; letter-spacing: 0.2px;
+    margin-top: 1px;
+  }
+  .header-actions { display: flex; align-items: center; gap: 10px; }
+  .btn-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .btn-icon svg { width: 18px; height: 18px; color: var(--text-2); }
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-head);
+    font-size: 13px; font-weight: 700;
+    color: #fff; cursor: pointer;
+  }
+
+  /* ── TOGGLE ── */
+  .toggle-wrap { padding: 12px 20px 0; }
+  .toggle {
+    display: flex;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 4px;
+  }
+  .toggle-btn {
+    flex: 1; padding: 8px 0;
+    border-radius: var(--r-sm);
+    font-family: var(--font-body);
+    font-size: 13px; font-weight: 600;
+    border: none; cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    color: var(--text-3); background: transparent;
+  }
+  .toggle-btn.active {
+    background: var(--navy);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(1,1,49,0.25);
+  }
+  .toggle-btn svg { width: 14px; height: 14px; }
+
+  /* ── MARKET TICKER ── */
+  .section { padding: 18px 20px 0; }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: var(--font-head);
+    font-size: 11px; font-weight: 700;
+    color: var(--text-3); letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+  .section-link {
+    font-size: 12px; font-weight: 600;
+    color: var(--blue); text-decoration: none;
+  }
+  .section-meta {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--text-3);
+  }
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  .ticker-scroll {
+    display: flex; gap: 10px;
+    overflow-x: auto; padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .ticker-scroll::-webkit-scrollbar { display: none; }
+
+  .ticker-card {
+    min-width: 130px;
+    background: var(--card);
+    border-radius: var(--r-md);
+    border: 1px solid var(--border);
+    padding: 14px;
+    flex-shrink: 0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+    animation: slideIn 0.4s ease both;
+  }
+  .ticker-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(1,1,49,0.09);
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(12px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  .ticker-card:nth-child(1) { animation-delay: 0.05s; }
+  .ticker-card:nth-child(2) { animation-delay: 0.1s; }
+  .ticker-card:nth-child(3) { animation-delay: 0.15s; }
+  .ticker-card:nth-child(4) { animation-delay: 0.2s; }
+  .ticker-card:nth-child(5) { animation-delay: 0.25s; }
+  .ticker-card:nth-child(6) { animation-delay: 0.3s; }
+
+  .ticker-top {
+    display: flex; align-items: center; gap: 5px;
+    margin-bottom: 8px;
+  }
+  .ticker-flag {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--blue-light);
+    font-size: 11px; display: flex; align-items: center;
+    justify-content: center; flex-shrink: 0;
+  }
+  .ticker-id {
+    font-size: 10px; font-weight: 700; color: var(--text-3);
+    letter-spacing: 0.5px;
+  }
+  .ticker-symbol {
+    font-family: var(--font-head);
+    font-size: 12px; font-weight: 700;
+    color: var(--text-2); margin-left: auto;
+  }
+  .ticker-value {
+    font-family: var(--font-head);
+    font-size: 20px; font-weight: 700;
+    color: var(--navy); letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .ticker-change {
+    margin-top: 5px;
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 7px; border-radius: 6px;
+  }
+  .ticker-change.up   { color: #00A878; background: var(--green-bg); }
+  .ticker-change.down { color: var(--red); background: var(--red-bg); }
+  .ticker-change svg  { width: 10px; height: 10px; }
+
+  .sparkline { margin-top: 8px; }
+  .sparkline svg { width: 100%; height: 28px; }
+
+  /* ── FEATURE CARDS GRID ── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .feat-card {
+    background: var(--card);
+    border-radius: var(--r-md);
+    border: 1px solid var(--border);
+    padding: 16px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+  }
+  .feat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(1,1,49,0.09);
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .feat-card-wide {
+    grid-column: span 2;
+  }
+  .feat-icon-wrap {
+    width: 40px; height: 40px; border-radius: var(--r-sm);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px; flex-shrink: 0;
+  }
+  .feat-icon-wrap svg { width: 20px; height: 20px; }
+
+  .ic-red     { background: #FFF0F3; }
+  .ic-red svg { color: #FF4B6E; }
+  .ic-orange     { background: #FFF5ED; }
+  .ic-orange svg { color: #FF8A35; }
+  .ic-green     { background: #E6FAF5; }
+  .ic-green svg { color: #00C896; }
+  .ic-blue      { background: #EAF2FC; }
+  .ic-blue svg  { color: #5391D5; }
+  .ic-purple     { background: #F0EEFE; }
+  .ic-purple svg { color: #7C5FDB; }
+  .ic-navy     { background: #EAEBF7; }
+  .ic-navy svg { color: #010131; }
+  .ic-amber     { background: #FFF8E6; }
+  .ic-amber svg { color: #F2A600; }
+  .ic-teal      { background: #E3F6F5; }
+  .ic-teal svg  { color: #00A8A0; }
+
+  .feat-cat {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--text-3);
+    margin-bottom: 3px;
+  }
+  .feat-name {
+    font-family: var(--font-head);
+    font-size: 14px; font-weight: 700;
+    color: var(--navy); line-height: 1.2;
+  }
+  .feat-sub {
+    font-size: 11px; color: var(--text-3);
+    margin-top: 3px; font-weight: 500;
+  }
+  .feat-badge {
+    position: absolute; top: 10px; right: 10px;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 3px 7px; border-radius: 20px;
+    text-transform: uppercase;
+  }
+  .badge-live { background: #00C896; color: #fff; }
+  .badge-hot  { background: #FF4B6E; color: #fff; }
+  .badge-new  { background: var(--blue); color: #fff; }
+
+  /* Wide horizontal card */
+  .feat-card-row {
+    background: var(--card);
+    border-radius: var(--r-md);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 14px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    animation: fadeUp 0.4s ease both;
+  }
+  .feat-card-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(1,1,49,0.09);
+  }
+  .feat-card-row .feat-content { flex: 1; }
+  .feat-card-row .feat-arrow {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--bg); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .feat-card-row .feat-arrow svg { width: 14px; height: 14px; color: var(--text-2); }
+
+  /* ── AI PROMO CARD ── */
+  .ai-card {
+    background: var(--navy);
+    border-radius: var(--r-lg);
+    padding: 20px;
+    display: flex; align-items: center; gap: 16px;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    animation: fadeUp 0.4s ease 0.2s both;
+  }
+  .ai-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(83,145,213,0.25);
+  }
+  .ai-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; right: 60px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(83,145,213,0.12);
+  }
+  .ai-icon {
+    width: 52px; height: 52px; border-radius: var(--r-md);
+    background: rgba(255,255,255,0.12);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; position: relative; z-index: 1;
+  }
+  .ai-icon svg { width: 26px; height: 26px; color: #fff; }
+  .ai-content { flex: 1; position: relative; z-index: 1; }
+  .ai-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+  .ai-title {
+    font-family: var(--font-head);
+    font-size: 16px; font-weight: 700;
+    color: #fff; line-height: 1.2; margin-bottom: 4px;
+  }
+  .ai-sub {
+    font-size: 12px; color: rgba(255,255,255,0.55);
+  }
+  .ai-cta {
+    flex-shrink: 0; position: relative; z-index: 1;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: var(--r-sm);
+    padding: 8px 14px;
+    color: #fff; font-size: 12px; font-weight: 700;
+    font-family: var(--font-body);
+    cursor: pointer;
+  }
+
+  /* ── BOTTOM NAV ── */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    padding: 8px 0 16px;
+    z-index: 100;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 3px;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  .nav-icon {
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+  .nav-icon svg { width: 18px; height: 18px; color: var(--text-3); }
+  .nav-item.active .nav-icon {
+    background: var(--blue-light);
+  }
+  .nav-item.active .nav-icon svg { color: var(--blue); }
+  .nav-label {
+    font-size: 10px; font-weight: 600;
+    color: var(--text-3); letter-spacing: 0.2px;
+  }
+  .nav-item.active .nav-label { color: var(--blue); }
+
+  /* Animation delays for grid cards */
+  .cards-grid .feat-card:nth-child(1) { animation-delay: 0.05s; }
+  .cards-grid .feat-card:nth-child(2) { animation-delay: 0.10s; }
+  .cards-grid .feat-card:nth-child(3) { animation-delay: 0.15s; }
+  .cards-grid .feat-card:nth-child(4) { animation-delay: 0.20s; }
+  .cards-grid .feat-card:nth-child(5) { animation-delay: 0.25s; }
+  .cards-grid .feat-card:nth-child(6) { animation-delay: 0.30s; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-brand">
+    <div class="brand-logo">
+      <span class="brand-logo-text">أسهم</span>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">Ashom</span>
+      <span class="brand-sub">GCC Financial Intelligence</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <div class="btn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+    </div>
+    <div class="avatar">AS</div>
+  </div>
+</header>
+
+<!-- TOGGLE -->
+<div class="toggle-wrap">
+  <div class="toggle">
+    <button class="toggle-btn active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      My Screen
+    </button>
+    <button class="toggle-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Explore
+    </button>
+  </div>
+</div>
+
+<!-- MARKET TICKER -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-title">GCC Markets</span>
+    <div class="section-meta">
+      <div class="live-dot"></div>
+      <span>Live · 12:04 PM</span>
+    </div>
+  </div>
+  <div class="ticker-scroll">
+
+    <!-- TASI -->
+    <div class="ticker-card">
+      <div class="ticker-top">
+        <div class="ticker-flag">🇸🇦</div>
+        <span class="ticker-id">SA</span>
+        <span class="ticker-symbol">TASI</span>
+      </div>
+      <div class="ticker-value">12,484</div>
+      <span class="ticker-change up">
+        <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 2L10 8H2L6 2Z"/></svg>
+        +1.24%
+      </span>
+      <div class="sparkline">
+        <svg viewBox="0 0 130 28" preserveAspectRatio="none">
+          <polyline points="0,20 15,18 30,16 45,14 60,15 75,12 90,10 105,8 130,6" fill="none" stroke="#00C896" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- DFM -->
+    <div class="ticker-card">
+      <div class="ticker-top">
+        <div class="ticker-flag">🇦🇪</div>
+        <span class="ticker-id">AE</span>
+        <span class="ticker-symbol">DFM</span>
+      </div>
+      <div class="ticker-value">4,521</div>
+      <span class="ticker-change down">
+        <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 10L2 4H10L6 10Z"/></svg>
+        -0.38%
+      </span>
+      <div class="sparkline">
+        <svg viewBox="0 0 130 28" preserveAspectRatio="none">
+          <polyline points="0,8 20,10 40,9 60,12 80,14 100,16 115,18 130,20" fill="none" stroke="#FF4B6E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- QE -->
+    <div class="ticker-card">
+      <div class="ticker-top">
+        <div class="ticker-flag">🇶🇦</div>
+        <span class="ticker-id">QA</span>
+        <span class="ticker-symbol">QE</span>
+      </div>
+      <div class="ticker-value">10,246</div>
+      <span class="ticker-change up">
+        <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 2L10 8H2L6 2Z"/></svg>
+        +0.67%
+      </span>
+      <div class="sparkline">
+        <svg viewBox="0 0 130 28" preserveAspectRatio="none">
+          <polyline points="0,18 20,16 40,17 55,14 75,12 95,10 115,9 130,7" fill="none" stroke="#00C896" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Boursa -->
+    <div class="ticker-card">
+      <div class="ticker-top">
+        <div class="ticker-flag">🇰🇼</div>
+        <span class="ticker-id">KW</span>
+        <span class="ticker-symbol">Boursa</span>
+      </div>
+      <div class="ticker-value">7,892</div>
+      <span class="ticker-change up">
+        <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 2L10 8H2L6 2Z"/></svg>
+        +0.15%
+      </span>
+      <div class="sparkline">
+        <svg viewBox="0 0 130 28" preserveAspectRatio="none">
+          <polyline points="0,15 25,14 50,13 75,14 95,12 115,11 130,10" fill="none" stroke="#00C896" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- BAX -->
+    <div class="ticker-card">
+      <div class="ticker-top">
+        <div class="ticker-flag">🇧🇭</div>
+        <span class="ticker-id">BH</span>
+        <span class="ticker-symbol">BAX</span>
+      </div>
+      <div class="ticker-value">1,985</div>
+      <span class="ticker-change down">
+        <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 10L2 4H10L6 10Z"/></svg>
+        -0.12%
+      </span>
+      <div class="sparkline">
+        <svg viewBox="0 0 130 28" preserveAspectRatio="none">
+          <polyline points="0,10 30,11 55,12 80,13 100,15 120,16 130,18" fill="none" stroke="#FF4B6E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- MSM30 -->
+    <div class="ticker-card">
+      <div class="ticker-top">
+        <div class="ticker-flag">🇴🇲</div>
+        <span class="ticker-id">OM</span>
+        <span class="ticker-symbol">MSM30</span>
+      </div>
+      <div class="ticker-value">4,678</div>
+      <span class="ticker-change up">
+        <svg viewBox="0 0 12 12" fill="currentColor"><path d="M6 2L10 8H2L6 2Z"/></svg>
+        +0.89%
+      </span>
+      <div class="sparkline">
+        <svg viewBox="0 0 130 28" preserveAspectRatio="none">
+          <polyline points="0,20 20,18 45,15 65,13 85,11 105,8 130,5" fill="none" stroke="#00C896" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- AI PROMO -->
+<div class="section" style="padding-top:16px;">
+  <div class="ai-card">
+    <div class="ai-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2a5 5 0 0 1 5 5c0 2.5-1.5 4.5-3.5 5.5L15 21H9l1.5-8.5C8.5 11.5 7 9.5 7 7a5 5 0 0 1 5-5z"/>
+        <circle cx="12" cy="7" r="1.5" fill="currentColor"/>
+      </svg>
+    </div>
+    <div class="ai-content">
+      <div class="ai-label">AI Financial Analyst</div>
+      <div class="ai-title">Ask about GCC markets</div>
+      <div class="ai-sub">820+ companies · Live data</div>
+    </div>
+    <button class="ai-cta">Ask AI</button>
+  </div>
+</div>
+
+<!-- MARKETS -->
+<div class="section" style="padding-top:20px;">
+  <div class="section-header">
+    <span class="section-title">Markets</span>
+    <a class="section-link" href="#">See all</a>
+  </div>
+  <div class="cards-grid">
+
+    <div class="feat-card">
+      <span class="feat-badge badge-live">Live</span>
+      <div class="feat-icon-wrap ic-red">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="feat-cat">Live</div>
+      <div class="feat-name">Metals &amp; Oil</div>
+      <div class="feat-sub">Gold · Oil · Silver</div>
+    </div>
+
+    <div class="feat-card">
+      <span class="feat-badge badge-hot">Hot</span>
+      <div class="feat-icon-wrap ic-orange">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 6v6l4 2"/>
+        </svg>
+      </div>
+      <div class="feat-cat">Crypto</div>
+      <div class="feat-name">Live Prices</div>
+      <div class="feat-sub">BTC · ETH · SOL</div>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon-wrap ic-blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>
+      </div>
+      <div class="feat-cat">Companies</div>
+      <div class="feat-name">Browse GCC</div>
+      <div class="feat-sub">820+ listed</div>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon-wrap ic-amber">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="feat-cat">Watchlist</div>
+      <div class="feat-name">My Picks</div>
+      <div class="feat-sub">Track favorites</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PORTFOLIO -->
+<div class="section" style="padding-top:20px;">
+  <div class="section-header">
+    <span class="section-title">Portfolio</span>
+    <a class="section-link" href="#">See all</a>
+  </div>
+  <div class="cards-grid">
+
+    <div class="feat-card">
+      <div class="feat-icon-wrap ic-navy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+      </div>
+      <div class="feat-cat">Holdings</div>
+      <div class="feat-name">Real Portfolio</div>
+      <div class="feat-sub">Track holdings</div>
+    </div>
+
+    <div class="feat-card">
+      <span class="feat-badge badge-new">New</span>
+      <div class="feat-icon-wrap ic-purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 20V10M18 20V4M6 20v-6"/>
+        </svg>
+      </div>
+      <div class="feat-cat">Practice</div>
+      <div class="feat-name">Simulator</div>
+      <div class="feat-sub">$100K virtual</div>
+    </div>
+
+    <div class="feat-card feat-card-wide">
+      <span class="feat-badge badge-new">New</span>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="feat-icon-wrap ic-teal" style="margin-bottom:0;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div>
+          <div class="feat-cat">Classroom</div>
+          <div class="feat-name">Compete</div>
+          <div class="feat-sub">Class rankings · Leaderboard</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- DISCOVER -->
+<div class="section" style="padding-top:20px;">
+  <div class="section-header">
+    <span class="section-title">Discover</span>
+    <a class="section-link" href="#">See all</a>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+
+    <div class="feat-card-row">
+      <div class="feat-icon-wrap ic-blue" style="margin-bottom:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>
+        </svg>
+      </div>
+      <div class="feat-content">
+        <div class="feat-cat">Sectors</div>
+        <div class="feat-name">Dashboard</div>
+        <div class="feat-sub">Industry data &amp; breakdowns</div>
+      </div>
+      <div class="feat-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+
+    <div class="feat-card-row" style="position:relative;">
+      <span class="feat-badge badge-new" style="position:absolute;top:10px;right:10px;">New</span>
+      <div class="feat-icon-wrap ic-amber" style="margin-bottom:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div class="feat-content">
+        <div class="feat-cat">Curated</div>
+        <div class="feat-name">Smart Picks</div>
+        <div class="feat-sub">Top lists &amp; AI-curated ideas</div>
+      </div>
+      <div class="feat-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+
+    <div class="feat-card-row">
+      <div class="feat-icon-wrap ic-green" style="margin-bottom:0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/>
+        </svg>
+      </div>
+      <div class="feat-content">
+        <div class="feat-cat">Currency</div>
+        <div class="feat-name">Converter</div>
+        <div class="feat-sub">Live GCC exchange rates</div>
+      </div>
+      <div class="feat-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- RESEARCH & TOOLS -->
+<div class="section" style="padding-top:20px; padding-bottom:4px;">
+  <div class="section-header">
+    <span class="section-title">Research &amp; Tools</span>
+    <a class="section-link" href="#">See all</a>
+  </div>
+  <div class="cards-grid">
+
+    <div class="feat-card">
+      <div class="feat-icon-wrap ic-navy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        </svg>
+      </div>
+      <div class="feat-cat">Reports</div>
+      <div class="feat-name">Annual Filings</div>
+      <div class="feat-sub">SEC · CMA filings</div>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon-wrap ic-blue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+      </div>
+      <div class="feat-cat">Analytics</div>
+      <div class="feat-name">Start Analysis</div>
+      <div class="feat-sub">9 comparison types</div>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon-wrap ic-purple">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 2v7.31"/><path d="M14 9.3V1.99"/><path d="M8.5 2h7"/><path d="M7 16.3V22l5-3 5 3v-5.7"/>
+          <path d="M12 12a5 5 0 1 0 5 5"/>
+        </svg>
+      </div>
+      <div class="feat-cat">Quant Lab</div>
+      <div class="feat-name">Factor Models</div>
+      <div class="feat-sub">Risk &amp; returns</div>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon-wrap ic-green">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      </div>
+      <div class="feat-cat">Export</div>
+      <div class="feat-name">PDF Reports</div>
+      <div class="feat-sub">Portfolio reports</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="nav-item active">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <span class="nav-label">Home</span>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
+    </div>
+    <span class="nav-label">Markets</span>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/>
+      </svg>
+    </div>
+    <span class="nav-label">AI</span>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+    </div>
+    <span class="nav-label">Analytics</span>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+      </svg>
+    </div>
+    <span class="nav-label">Portfolio</span>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a4 4 0 0 1-4 4z"/><path d="M2 17.5A2.5 2.5 0 0 1 4.5 15H20"/>
+      </svg>
+    </div>
+    <span class="nav-label">News</span>
+  </div>
+  <div class="nav-item">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>
+      </svg>
+    </div>
+    <span class="nav-label">Learning</span>
+  </div>
+</nav>
+
+<script>
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "name": "Ashom — GCC Financial Analysis",
+  "short_name": "Ashom",
+  "description": "CFA-level financial analysis for 820+ GCC publicly traded companies. Compare, screen, and track across 6 markets.",
+  "start_url": "/01_Dashboard_Home.html",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#3878BE",
+  "orientation": "portrait",
+  "id": "/",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["finance", "business", "productivity"],
+  "screenshots": [
+    {
+      "src": "/screenshot-1.png",
+      "sizes": "430x932",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Dashboard with Quick Actions"
+    },
+    {
+      "src": "/screenshot-2.png",
+      "sizes": "430x932",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Company Comparison Results"
+    }
+  ],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}

@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --navy:       #010131;
+    --navy-soft:  #0a0a4a;
+    --blue:       #5391D5;
+    --blue-light: #EAF2FC;
+    --blue-mid:   #C5DEFA;
+    --green:      #00C896;
+    --green-bg:   #E6FAF5;
+    --red:        #FF4B6E;
+    --red-bg:     #FFF0F3;
+    --bg:         #F4F6FB;
+    --card:       #FFFFFF;
+    --border:     #E8ECF4;
+    --text-1:     #010131;
+    --text-2:     #5A6480;
+    --text-3:     #9AA3BD;
+    --font-head:  'Sora', sans-serif;
+    --font-body:  'DM Sans', sans-serif;
+    --r-sm:       10px;
+    --r-md:       16px;
+    --r-lg:       20px;
+    --r-xl:       24px;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    font-family: var(--font-body);
+    background: #1a1a2e;
+    color: var(--text-1);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-md;
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .card-hover {
+    @apply transition-all duration-150 cursor-pointer;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(1,1,49,0.09);
+  }
+  .badge {
+    @apply inline-flex items-center gap-1 text-2xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border;
+  }
+  .section-label {
+    font-family: var(--font-head);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-3);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+  .live-dot {
+    @apply inline-block w-1.5 h-1.5 rounded-full animate-pulse-dot mr-1;
+    background: var(--green);
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .skeleton {
+    @apply animate-shimmer;
+    background: linear-gradient(90deg, var(--border) 25%, var(--card) 50%, var(--border) 75%);
+    background-size: 200% 100%;
+  }
+  .tap-highlight {
+    @apply active:scale-95 active:opacity-80 transition-all duration-150;
+  }
+  .glass-header {
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .glass-nav {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .stagger-children > * {
+    animation: fadeUp 0.4s ease both;
+  }
+  .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger-children > *:nth-child(2) { animation-delay: 0.10s; }
+  .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+  .stagger-children > *:nth-child(4) { animation-delay: 0.20s; }
+  .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+  .stagger-children > *:nth-child(6) { animation-delay: 0.30s; }
+  .stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+  .stagger-children > *:nth-child(8) { animation-delay: 0.40s; }
+}
+
+/* ── Mobile Device Frame (desktop browsers) ── */
+@media (min-width: 480px) {
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    background: #1a1a2e;
+  }
+
+  #root {
+    width: 430px;
+    min-height: 100vh;
+    position: relative;
+    background: var(--bg);
+    box-shadow: 0 0 60px rgba(0,0,0,0.3);
+    border-left: 1px solid rgba(255,255,255,0.06);
+    border-right: 1px solid rgba(255,255,255,0.06);
+  }
+}
+
+@media (max-width: 479px) {
+  body {
+    background: var(--bg);
+  }
+
+  #root {
+    width: 100%;
+    min-height: 100vh;
+  }
+}
+
+/* ── Dark Mode ── */
+html[data-theme="dark"] {
+  --navy:       #E5E7EB;
+  --navy-soft:  #D1D5DB;
+  --blue:       #6BA3E0;
+  --blue-light: #1E293B;
+  --blue-mid:   #1E3A5F;
+  --green:      #34D399;
+  --green-bg:   rgba(52, 211, 153, 0.15);
+  --red:        #FB7185;
+  --red-bg:     rgba(251, 113, 133, 0.15);
+  --bg:         #0F1117;
+  --card:       #1A1C24;
+  --border:     #2A2D35;
+  --text-1:     #E5E7EB;
+  --text-2:     #9CA3AF;
+  --text-3:     #6B7280;
+}
+
+html[data-theme="dark"] .glass-header {
+  background: rgba(26, 28, 36, 0.92);
+}
+html[data-theme="dark"] .glass-nav {
+  background: rgba(26, 28, 36, 0.95);
+}

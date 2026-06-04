@@ -1,0 +1,69 @@
+{
+  "name": "vifm-gcc-financial-analysis",
+  "version": "1.0.0",
+  "description": "VIFM GCC Financial Analysis App - Complete fundamental analysis platform for GCC capital markets",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "build": "cd frontend && npm install && CI=false npm run build",
+    "init-db": "node server/initDatabase.js",
+    "seed-db": "node server/seedDatabase.js",
+    "lint": "eslint server/**/*.js",
+    "lint:fix": "eslint server/**/*.js --fix",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ios:sync": "npx cap sync ios",
+    "ios:open": "npx cap open ios",
+    "ios:run": "npx cap run ios"
+  },
+  "keywords": [
+    "finance",
+    "gcc",
+    "analysis",
+    "stock",
+    "market"
+  ],
+  "author": "VIFM",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/browser": "^8.0.3",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.3.0",
+    "@capacitor/keyboard": "^8.0.2",
+    "@capacitor/share": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.2",
+    "@supabase/supabase-js": "^2.75.0",
+    "better-sqlite3": "^12.4.1",
+    "cheerio": "^1.2.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "localtunnel": "^1.8.3",
+    "mammoth": "^1.11.0",
+    "morgan": "^1.10.0",
+    "multer": "^2.1.0",
+    "node-fetch": "^3.3.2",
+    "pdf-parse": "^2.4.5",
+    "rss-parser": "^3.13.0",
+    "sqlite3": "^5.1.6",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "^6.5.1",
+    "eslint": "^9.37.0",
+    "nodemon": "^3.0.1",
+    "playwright": "^1.59.1",
+    "typescript": "^6.0.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

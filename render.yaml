@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: ashom
+    runtime: node
+    buildCommand: yarn install && cd frontend && yarn install && CI=false yarn build
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production

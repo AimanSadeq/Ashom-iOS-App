@@ -1,0 +1,31 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "vifm-dev",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server/index.js"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "vifm-prod",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["server/index.js"],
+      "port": 3000,
+      "autoPort": true
+    },
+    {
+      "name": "ashom-react",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["react-scripts", "start"],
+      "port": 3001,
+      "autoPort": true,
+      "cwd": "frontend",
+      "env": {
+        "DISABLE_ESLINT_PLUGIN": "true",
+        "BROWSER": "none"
+      }
+    }
+  ]
+}

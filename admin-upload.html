@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Admin — Financial Data Upload | Ashom</title>
+  <link rel="stylesheet" href="/vifm-icons.css">
+    <script src="/vifm-icons.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary:    #06080F;
+      --bg-card:       rgba(15, 18, 30, 0.7);
+      --bg-surface:    rgba(20, 24, 38, 0.6);
+      --text-primary:  #E8ECF4;
+      --text-secondary:#9CA3AF;
+      --text-tertiary: #6B7280;
+      --accent-blue:   #5391D5;
+      --accent-cyan:   #00D4FF;
+      --border:        rgba(255, 255, 255, 0.08);
+      --border-hover:  rgba(255, 255, 255, 0.15);
+      --success:       #10B981;
+      --error:         #EF4444;
+      --warning:       #F59E0B;
+      --glow:          0 0 20px rgba(83, 145, 213, 0.15);
+    }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ── Top Bar ── */
+    .top-bar {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      color: var(--text-primary);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+    }
+    .top-bar .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .top-bar .brand i { color: var(--accent-cyan); font-size: 20px; }
+    .top-bar .badge {
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Login Screen ── */
+    .login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .login-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: var(--glow);
+      text-align: center;
+    }
+    .login-icon {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: white;
+      margin: 0 auto 20px;
+      box-shadow: 0 4px 20px rgba(0, 212, 255, 0.2);
+    }
+    .login-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; color: var(--text-primary); }
+    .login-sub   { font-size: 13px; color: var(--text-secondary); margin-bottom: 28px; }
+
+    /* ── Main Layout ── */
+    .main { display: none; max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px; }
+    .main.active { display: block; }
+
+    /* ── Stats Bar ── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 768px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+    .stat-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .stat-card:hover { border-color: var(--border-hover); box-shadow: var(--glow); }
+    .stat-number { font-size: 26px; font-weight: 700; color: var(--accent-cyan); }
+    .stat-label  { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* ── Upload Panel ── */
+    .upload-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 28px;
+      transition: border-color 0.2s;
+    }
+    .upload-panel:hover { border-color: var(--border-hover); }
+    .panel-header {
+      background: linear-gradient(135deg, rgba(83,145,213,0.15), rgba(0,212,255,0.08));
+      border-bottom: 1px solid var(--border);
+      color: var(--text-primary);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .panel-header i   { font-size: 20px; color: var(--accent-cyan); }
+    .panel-header h2  { font-size: 16px; font-weight: 700; }
+    .panel-header p   { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .panel-body { padding: 24px; }
+
+    /* ── Tabs ── */
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      background: rgba(10, 12, 20, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 9px 12px;
+      border: none;
+      background: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      transition: all 0.2s;
+    }
+    .tab-btn:hover { color: var(--text-secondary); }
+    .tab-btn.active {
+      background: rgba(83, 145, 213, 0.15);
+      color: var(--accent-cyan);
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.1);
+    }
+
+    /* ── Form ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 640px) { .form-grid { grid-template-columns: 1fr; } }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+    label i { color: var(--accent-blue); }
+    select, input[type="text"], input[type="number"], input[type="password"], textarea {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--text-primary);
+      background: rgba(10, 12, 20, 0.5);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+    select option { background: #0F1117; color: var(--text-primary); }
+    select:focus, input:focus, textarea:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 12px rgba(83, 145, 213, 0.15);
+    }
+    textarea { resize: vertical; min-height: 140px; }
+
+    /* ── File Drop Zone ── */
+    .drop-zone {
+      border: 2px dashed rgba(83, 145, 213, 0.3);
+      border-radius: 14px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(10, 12, 20, 0.3);
+      margin-bottom: 20px;
+    }
+    .drop-zone:hover, .drop-zone.dragging {
+      border-color: var(--accent-cyan);
+      background: rgba(0, 212, 255, 0.04);
+      box-shadow: 0 0 24px rgba(0, 212, 255, 0.08);
+    }
+    .drop-zone i      { font-size: 36px; color: var(--accent-cyan); margin-bottom: 12px; }
+    .drop-zone h3     { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+    .drop-zone p      { font-size: 12px; color: var(--text-secondary); }
+    .drop-zone .file-types {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .file-type-badge {
+      background: rgba(83, 145, 213, 0.12);
+      color: var(--accent-cyan);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(83, 145, 213, 0.2);
+    }
+    .selected-file {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6EE7B7;
+    }
+    .selected-file.active { display: flex; }
+    .selected-file i { font-size: 20px; }
+    .selected-file .remove-file { margin-left: auto; cursor: pointer; color: var(--text-secondary); }
+    .selected-file .remove-file:hover { color: var(--error); }
+
+    /* ── Submit Button ── */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .submit-btn:hover   { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3); }
+    .submit-btn:active  { transform: scale(0.98); }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── Feedback Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: rgba(245, 247, 250, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 999;
+      transition: transform 0.3s ease;
+      max-width: 420px;
+      width: calc(100% - 40px);
+      color: var(--text-primary);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.error   { border-left: 4px solid var(--error); }
+    .toast.success i { color: var(--success); }
+    .toast.error   i { color: var(--error); }
+
+    /* ── Recent Uploads Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      background: rgba(10, 12, 20, 0.5);
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+    tr:hover td { background: rgba(83, 145, 213, 0.04); }
+    .doc-type-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-bs      { background: rgba(59, 130, 246, 0.15); color: #60A5FA; border: 1px solid rgba(59, 130, 246, 0.25); }
+    .badge-is      { background: rgba(16, 185, 129, 0.15); color: #6EE7B7; border: 1px solid rgba(16, 185, 129, 0.25); }
+    .badge-cf      { background: rgba(245, 158, 11, 0.15); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.25); }
+    .badge-annual  { background: rgba(139, 92, 246, 0.15); color: #A78BFA; border: 1px solid rgba(139, 92, 246, 0.25); }
+    .badge-news    { background: rgba(239, 68, 68, 0.15);  color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.25); }
+    .badge-board   { background: rgba(0, 212, 255, 0.1);   color: #67E8F9; border: 1px solid rgba(0, 212, 255, 0.2); }
+    .badge-quarterly { background: rgba(251, 146, 60, 0.15); color: #FDBA74; border: 1px solid rgba(251, 146, 60, 0.25); }
+
+    .btn-sm {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-danger { background: rgba(239, 68, 68, 0.15); color: #FCA5A5; border: 1px solid rgba(239, 68, 68, 0.25); }
+    .btn-danger:hover { background: #DC2626; color: white; }
+
+    /* ── Loading spinner ── */
+    .spinner { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Progress bar ── */
+    .progress-wrap { margin-bottom: 16px; display: none; }
+    .progress-wrap.active { display: block; }
+    .progress-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+      border-radius: 99px;
+      width: 0%;
+      transition: width 0.3s ease;
+      box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+    }
+    .progress-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+  </style>
+    <script src="/vifm-demo-data.js"></script>
+    <script src="/vifm-demo.js"></script>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div class="top-bar">
+  <div class="brand">
+    <svg class="vifm-icon"><use href="#icon-shield-halved"></use></svg>
+    <div>
+      <div>Ashom Admin Portal</div>
+    </div>
+  </div>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <a href="/01_Dashboard_Home.html" style="display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:8px; background:rgba(255,255,255,0.06); border:1px solid var(--border); color:var(--text-secondary); text-decoration:none; font-size:12px; font-weight:600; transition:all 0.2s;" onmouseover="this.style.borderColor='var(--accent-cyan)';this.style.color='var(--accent-cyan)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-secondary)'">
+      <svg class="vifm-icon" style="width: 11px; height: 11px;"><use href="#icon-house"></use></svg> Home
+    </a>
+    <div class="badge">ADMIN ONLY</div>
+  </div>
+</div>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-icon"><svg class="vifm-icon"><use href="#icon-lock"></use></svg></div>
+    <div class="login-title">Admin Access</div>
+    <div class="login-sub">Enter your admin password to access the Financial Data Upload portal</div>
+    <div class="form-group" style="margin-bottom:16px; text-align:left;">
+      <label>Admin Password</label>
+      <input type="password" id="passwordInput" placeholder="Enter admin password"
+             onkeydown="if(event.key==='Enter') login()">
+    </div>
+    <button class="submit-btn" onclick="login()">
+      <svg class="vifm-icon"><use href="#icon-right-to-bracket"></use></svg> Enter Portal
+    </button>
+    <div id="loginError" style="color:#EF4444; font-size:13px; margin-top:12px; display:none;">
+      ❌ Incorrect password. Please try again.
+    </div>
+  </div>
+</div>
+
+<!-- Main Admin Interface -->
+<div class="main" id="mainInterface">
+
+  <!-- Stats Bar -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-card">
+      <div class="stat-number" id="statDocs">—</div>
+      <div class="stat-label">Documents Uploaded</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="statStmts">—</div>
+      <div class="stat-label">Statement Rows</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="statChunks">—</div>
+      <div class="stat-label">Text Chunks (RAG)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="statBoard">—</div>
+      <div class="stat-label">Board Members</div>
+    </div>
+  </div>
+
+  <!-- Upload Panel -->
+  <div class="upload-panel">
+    <div class="panel-header">
+      <svg class="vifm-icon"><use href="#icon-cloud-arrow-up"></use></svg>
+      <div>
+        <h2>Upload Financial Data</h2>
+        <p>Add financial documents, statements, and reports to the AI knowledge base</p>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <!-- Tabs -->
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('file')" id="tab-file">
+          <svg class="vifm-icon"><use href="#icon-file-arrow-up"></use></svg> File Upload
+        </button>
+        <button class="tab-btn" onclick="switchTab('paste')" id="tab-paste">
+          <svg class="vifm-icon"><use href="#icon-paste"></use></svg> Paste Text
+        </button>
+        <button class="tab-btn" onclick="switchTab('board')" id="tab-board">
+          <svg class="vifm-icon"><use href="#icon-users"></use></svg> Board of Directors
+        </button>
+      </div>
+
+      <!-- Shared Fields -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label><svg class="vifm-icon"><use href="#icon-building"></use></svg> Company *</label>
+          <select id="companySelect">
+            <option value="">— Loading companies —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label><svg class="vifm-icon"><use href="#icon-tag"></use></svg> Document Type *</label>
+          <select id="documentType">
+            <option value="">— Select type —</option>
+            <option value="balance_sheet">Balance Sheet</option>
+            <option value="income_statement">Income Statement</option>
+            <option value="cash_flow">Cash Flow Statement</option>
+            <option value="annual_report">Annual Report</option>
+            <option value="quarterly_report">Quarterly Report</option>
+            <option value="news">News / Announcement</option>
+            <option value="board_of_directors">Board of Directors</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label><svg class="vifm-icon"><use href="#icon-calendar"></use></svg> Fiscal Year</label>
+          <input type="number" id="fiscalYear" placeholder="e.g. 2023" min="2000" max="2030">
+        </div>
+        <div class="form-group">
+          <label><svg class="vifm-icon"><use href="#icon-clock-rotate-left"></use></svg> Period</label>
+          <select id="fiscalPeriod">
+            <option value="FY">Full Year (FY)</option>
+            <option value="Q1">Q1</option>
+            <option value="Q2">Q2</option>
+            <option value="Q3">Q3</option>
+            <option value="Q4">Q4</option>
+            <option value="H1">H1</option>
+            <option value="H2">H2</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label><svg class="vifm-icon"><use href="#icon-language"></use></svg> Language</label>
+          <select id="language">
+            <option value="en">English</option>
+            <option value="ar">Arabic</option>
+            <option value="both">Bilingual (EN/AR)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label><svg class="vifm-icon"><use href="#icon-coins"></use></svg> Currency</label>
+          <select id="currency">
+            <option value="SAR">SAR — Saudi Riyal</option>
+            <option value="AED">AED — UAE Dirham</option>
+            <option value="KWD">KWD — Kuwaiti Dinar</option>
+            <option value="QAR">QAR — Qatari Riyal</option>
+            <option value="BHD">BHD — Bahraini Dinar</option>
+            <option value="OMR">OMR — Omani Rial</option>
+            <option value="USD">USD — US Dollar</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ── FILE UPLOAD TAB ── -->
+      <div id="pane-file">
+        <div class="drop-zone" id="dropZone"
+             onclick="document.getElementById('fileInput').click()"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)">
+          <svg class="vifm-icon"><use href="#icon-cloud-arrow-up"></use></svg>
+          <h3>Drag & drop your file here</h3>
+          <p>or click to browse</p>
+          <div class="file-types">
+            <span class="file-type-badge">PDF</span>
+            <span class="file-type-badge">Excel .xlsx</span>
+            <span class="file-type-badge">Word .docx</span>
+            <span class="file-type-badge">CSV</span>
+          </div>
+        </div>
+        <input type="file" id="fileInput" style="display:none"
+               accept=".pdf,.xlsx,.xls,.docx,.csv,.txt"
+               onchange="handleFileSelect(event)">
+        <div class="selected-file" id="selectedFile">
+          <svg class="vifm-icon"><use href="#icon-file-check"></use></svg>
+          <span id="selectedFileName"></span>
+          <span class="remove-file" onclick="clearFile()"><svg class="vifm-icon"><use href="#icon-xmark"></use></svg></span>
+        </div>
+        <div class="form-group" style="margin-bottom:16px;">
+          <label>Units (for Excel financial statements)</label>
+          <select id="unit">
+            <option value="thousands">Thousands</option>
+            <option value="millions">Millions</option>
+            <option value="billions">Billions</option>
+            <option value="units">Units (exact)</option>
+          </select>
+        </div>
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-label" id="progressLabel">Processing...</div>
+        </div>
+        <button class="submit-btn" id="uploadBtn" onclick="uploadFile()">
+          <svg class="vifm-icon"><use href="#icon-cloud-arrow-up"></use></svg> Upload & Process
+        </button>
+      </div>
+
+      <!-- ── PASTE TAB ── -->
+      <div id="pane-paste" style="display:none">
+        <div class="form-group" style="margin-bottom:16px;">
+          <label>Document Title (optional)</label>
+          <input type="text" id="pasteTitle" placeholder="e.g. Al Rajhi Q4 2023 Earnings Release">
+        </div>
+        <div class="form-group" style="margin-bottom:20px;">
+          <label>Paste Content *</label>
+          <textarea id="pasteText"
+            placeholder="Paste the full text of the document here — news announcement, annual report section, board resolution, earnings release, etc.
+
+Tip: The more complete the text, the better the AI can answer questions about it."></textarea>
+        </div>
+        <button class="submit-btn" id="pasteBtn" onclick="submitPaste()">
+          <svg class="vifm-icon"><use href="#icon-paste"></use></svg> Store Content
+        </button>
+      </div>
+
+      <!-- ── BOARD TAB ── -->
+      <div id="pane-board" style="display:none">
+        <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:12px; padding:14px; margin-bottom:20px; font-size:13px; color:#FCD34D;">
+          <svg class="vifm-icon"><use href="#icon-circle-info"></use></svg>
+          Enter board members as JSON. Each member needs at least <strong>full_name</strong> and <strong>role</strong>.
+        </div>
+        <div class="form-group" style="margin-bottom:20px;">
+          <label>Board Members (JSON array) *</label>
+          <textarea id="boardJson" style="min-height:220px; font-family: monospace; font-size:12px;"
+placeholder='[
+  {
+    "full_name": "Mohammed Al-Rashid",
+    "full_name_ar": "محمد الراشد",
+    "role": "Chairman",
+    "role_ar": "رئيس مجلس الإدارة",
+    "is_independent": false,
+    "nationality": "Saudi",
+    "committee_memberships": ["Executive Committee"]
+  },
+  {
+    "full_name": "Ahmed Al-Ghamdi",
+    "role": "Board Member",
+    "is_independent": true,
+    "committee_memberships": ["Audit Committee", "Risk Committee"]
+  }
+]'></textarea>
+        </div>
+        <button class="submit-btn" id="boardBtn" onclick="submitBoard()">
+          <svg class="vifm-icon"><use href="#icon-users"></use></svg> Store Board Members
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Recent Uploads -->
+  <div class="upload-panel" id="recentPanel" style="display:none">
+    <div class="panel-header">
+      <svg class="vifm-icon"><use href="#icon-clock-rotate-left"></use></svg>
+      <div>
+        <h2>Recent Uploads</h2>
+        <p>Documents loaded for the selected company</p>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Document Type</th>
+              <th>Filename</th>
+              <th>Year</th>
+              <th>Rows/Chunks</th>
+              <th>Uploaded</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="recentTable">
+            <tr><td colspan="6" style="text-align:center;color:#9CA3AF;padding:24px;">Select a company to view uploads</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span id="toastIcon"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let adminPassword = '';
+let selectedFile  = null;
+let currentTab    = 'file';
+
+// ── Login ──────────────────────────────────────────────────────
+async function login() {
+  const pw = document.getElementById('passwordInput').value.trim();
+  if (!pw) return;
+
+  // Verify password against stats endpoint
+  try {
+    const res = await fetch('/api/ingest/stats', {
+      headers: { 'x-admin-password': pw }
+    });
+    if (res.status === 401) {
+      document.getElementById('loginError').style.display = 'block';
+      return;
+    }
+    adminPassword = pw;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainInterface').classList.add('active');
+    loadCompanies();
+    loadStats();
+  } catch (e) {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+// ── Load companies for dropdown ───────────────────────────────
+async function loadCompanies() {
+  try {
+    const res  = await fetch('/api/companies');
+    const data = await res.json();
+    const companies = data.companies || data;
+    const sel  = document.getElementById('companySelect');
+    sel.innerHTML = '<option value="">— Select company —</option>';
+    companies.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value       = c.id;
+      opt.textContent = `${c.name} (${c.symbol || c.country})`;
+      sel.appendChild(opt);
+    });
+  } catch (e) {
+    console.error('Failed to load companies', e);
+  }
+}
+
+// ── Load stats ────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const res  = await fetch('/api/ingest/stats', {
+      headers: { 'x-admin-password': adminPassword }
+    });
+    const data = await res.json();
+    const s    = data.stats;
+    document.getElementById('statDocs').textContent   = s.total_documents.toLocaleString();
+    document.getElementById('statStmts').textContent  = s.total_statements.toLocaleString();
+    document.getElementById('statChunks').textContent = s.total_chunks.toLocaleString();
+    document.getElementById('statBoard').textContent  = s.total_board_members.toLocaleString();
+  } catch (e) {
+    console.error('Failed to load stats', e);
+  }
+}
+
+// ── Load recent uploads for selected company ──────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('companySelect').addEventListener('change', loadRecentUploads);
+});
+
+async function loadRecentUploads() {
+  const companyId = document.getElementById('companySelect').value;
+  if (!companyId) return;
+
+  document.getElementById('recentPanel').style.display = 'block';
+  const tbody = document.getElementById('recentTable');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9CA3AF;padding:24px;"><svg class="vifm-icon spinner"><use href="#icon-spinner"></use></svg> Loading...</td></tr>';
+
+  try {
+    const res  = await fetch(`/api/ingest/documents/${companyId}`, {
+      headers: { 'x-admin-password': adminPassword }
+    });
+    const data = await res.json();
+    const docs = data.documents || [];
+
+    if (docs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#9CA3AF;padding:24px;">No documents uploaded yet for this company.</td></tr>';
+      return;
+    }
+
+    const badgeMap = {
+      balance_sheet:    'badge-bs',
+      income_statement: 'badge-is',
+      cash_flow:        'badge-cf',
+      annual_report:    'badge-annual',
+      quarterly_report: 'badge-quarterly',
+      news:             'badge-news',
+      board_of_directors: 'badge-board'
+    };
+
+    tbody.innerHTML = docs.map(d => `
+      <tr>
+        <td><span class="doc-type-badge ${badgeMap[d.document_type] || ''}">${d.document_type.replace(/_/g,' ')}</span></td>
+        <td>${d.original_filename || '—'}</td>
+        <td>${d.fiscal_year || '—'}</td>
+        <td>${d.statement_count || 0} rows / ${d.chunk_count || 0} chunks</td>
+        <td>${new Date(d.created_at).toLocaleDateString('en-GB')}</td>
+        <td><button class="btn-sm btn-danger" onclick="deleteDocument('${d.id}')"><svg class="vifm-icon"><use href="#icon-trash"></use></svg></button></td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:#EF4444;padding:16px;">Failed to load documents.</td></tr>';
+  }
+}
+
+// ── Tab switching ─────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  ['file','paste','board'].forEach(t => {
+    document.getElementById(`pane-${t}`).style.display  = t === tab ? 'block' : 'none';
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+  });
+}
+
+// ── File handling ─────────────────────────────────────────────
+function handleDragOver(e)  { e.preventDefault(); document.getElementById('dropZone').classList.add('dragging'); }
+function handleDragLeave(e) { document.getElementById('dropZone').classList.remove('dragging'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragging');
+  const file = e.dataTransfer.files[0];
+  if (file) setSelectedFile(file);
+}
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) setSelectedFile(file);
+}
+function setSelectedFile(file) {
+  selectedFile = file;
+  document.getElementById('selectedFileName').textContent = `${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+  document.getElementById('selectedFile').classList.add('active');
+}
+function clearFile() {
+  selectedFile = null;
+  document.getElementById('selectedFile').classList.remove('active');
+  document.getElementById('fileInput').value = '';
+}
+
+// ── Get shared form values ────────────────────────────────────
+function getSharedValues() {
+  return {
+    company_id:    document.getElementById('companySelect').value,
+    document_type: document.getElementById('documentType').value,
+    fiscal_year:   document.getElementById('fiscalYear').value,
+    fiscal_period: document.getElementById('fiscalPeriod').value,
+    language:      document.getElementById('language').value,
+    currency:      document.getElementById('currency').value,
+  };
+}
+
+function validateShared() {
+  const v = getSharedValues();
+  if (!v.company_id)    { showToast('Please select a company.', 'error'); return false; }
+  if (!v.document_type) { showToast('Please select a document type.', 'error'); return false; }
+  return true;
+}
+
+// ── Upload file ───────────────────────────────────────────────
+async function uploadFile() {
+  if (!validateShared()) return;
+  if (!selectedFile)    { showToast('Please select a file to upload.', 'error'); return; }
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="vifm-icon spinner"><use href="#icon-spinner"></use></svg> Processing...';
+
+  const progressWrap = document.getElementById('progressWrap');
+  const progressFill = document.getElementById('progressFill');
+  const progressLabel = document.getElementById('progressLabel');
+  progressWrap.classList.add('active');
+
+  // Fake progress animation while awaiting server
+  let progress = 0;
+  const timer = setInterval(() => {
+    progress = Math.min(progress + Math.random() * 8, 85);
+    progressFill.style.width = progress + '%';
+    progressLabel.textContent = progress < 30 ? 'Reading file...' :
+                                 progress < 60 ? 'Extracting data...' :
+                                 progress < 80 ? 'Storing to database...' : 'Almost done...';
+  }, 300);
+
+  try {
+    const v = getSharedValues();
+    const formData = new FormData();
+    formData.append('file',          selectedFile);
+    formData.append('company_id',    v.company_id);
+    formData.append('document_type', v.document_type);
+    formData.append('fiscal_year',   v.fiscal_year);
+    formData.append('fiscal_period', v.fiscal_period);
+    formData.append('language',      v.language);
+    formData.append('currency',      v.currency);
+    formData.append('unit',          document.getElementById('unit').value);
+
+    const res  = await fetch('/api/ingest/upload', {
+      method: 'POST',
+      headers: { 'x-admin-password': adminPassword },
+      body: formData
+    });
+    const data = await res.json();
+
+    clearInterval(timer);
+    progressFill.style.width = '100%';
+    progressLabel.textContent = 'Complete!';
+    setTimeout(() => progressWrap.classList.remove('active'), 1500);
+
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+
+    showToast(data.message, 'success');
+    clearFile();
+    loadStats();
+    loadRecentUploads();
+
+  } catch (e) {
+    clearInterval(timer);
+    progressWrap.classList.remove('active');
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg class="vifm-icon"><use href="#icon-cloud-arrow-up"></use></svg> Upload & Process';
+  }
+}
+
+// ── Submit paste ──────────────────────────────────────────────
+async function submitPaste() {
+  if (!validateShared()) return;
+  const text = document.getElementById('pasteText').value.trim();
+  if (text.length < 20) { showToast('Please paste at least some text content.', 'error'); return; }
+
+  const btn = document.getElementById('pasteBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="vifm-icon spinner"><use href="#icon-spinner"></use></svg> Storing...';
+
+  try {
+    const v   = getSharedValues();
+    const res = await fetch('/api/ingest/paste', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({
+        ...v,
+        text,
+        title: document.getElementById('pasteTitle').value
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    showToast(data.message, 'success');
+    document.getElementById('pasteText').value  = '';
+    document.getElementById('pasteTitle').value = '';
+    loadStats();
+    loadRecentUploads();
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg class="vifm-icon"><use href="#icon-paste"></use></svg> Store Content';
+  }
+}
+
+// ── Submit board ──────────────────────────────────────────────
+async function submitBoard() {
+  if (!validateShared()) return;
+  let members;
+  try {
+    members = JSON.parse(document.getElementById('boardJson').value);
+    if (!Array.isArray(members) || members.length === 0) throw new Error('Must be a non-empty array');
+  } catch (e) {
+    showToast('Invalid JSON. Please check the format.', 'error'); return;
+  }
+
+  const btn = document.getElementById('boardBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="vifm-icon spinner"><use href="#icon-spinner"></use></svg> Storing...';
+
+  try {
+    const v   = getSharedValues();
+    const res = await fetch('/api/ingest/board', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({ company_id: v.company_id, fiscal_year: v.fiscal_year, members })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    showToast(data.message, 'success');
+    loadStats();
+    loadRecentUploads();
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg class="vifm-icon"><use href="#icon-users"></use></svg> Store Board Members';
+  }
+}
+
+// ── Delete document ───────────────────────────────────────────
+async function deleteDocument(docId) {
+  if (!confirm('Delete this document and all its associated data? This cannot be undone.')) return;
+  try {
+    const res = await fetch(`/api/ingest/documents/${docId}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-password': adminPassword }
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    showToast('Document deleted.', 'success');
+    loadStats();
+    loadRecentUploads();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+// ── Toast notification ────────────────────────────────────────
+let toastTimer = null;
+function showToast(message, type = 'success') {
+  const toast = document.getElementById('toast');
+  const icon  = document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent = message;
+  toast.className = `toast ${type}`;
+  icon.innerHTML  = type === 'success'
+    ? vifmIcon('circle-check')
+    : vifmIcon('circle-exclamation');
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 5000);
+}
+</script>
+</body>
+</html>
