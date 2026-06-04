@@ -1,357 +1,210 @@
-# 🚀 VIFM - GCC Financial Analysis Platform
+# 📈 Ashom — GCC Financial Intelligence Platform
 
-**Production-Ready Full-Stack Application**
-Modern, mobile-first financial analysis platform for GCC capital markets covering 820+ companies
+**Mobile-first financial analysis & intelligence platform for the Gulf Cooperation Council (GCC) capital markets**, covering 820+ companies across Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, and Oman.
 
-![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
 ![Node.js](https://img.shields.io/badge/Node.js-16%2B-339933?logo=node.js)
 ![Express](https://img.shields.io/badge/Express-4.18-000000?logo=express)
-![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite)
-![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![Flutter](https://img.shields.io/badge/Flutter-3.10%2B-02569B?logo=flutter)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres-3FCF8E?logo=supabase)
 
 ---
 
-## 📦 What's Included
+## 🧱 Repository Layout
 
-✅ **23 Complete Screens** - All core functionality implemented
-✅ **Backend Server** (Node.js + Express)
-✅ **SQLite Database** with 35+ GCC companies
-✅ **RESTful API** with 5 endpoint groups
-✅ **Live Market Data** - Cryptocurrencies, Metals & Oil
-✅ **8-Tab Navigation** - Enhanced mobile navigation
-✅ **Seed Data** for testing
-✅ **Complete Documentation** (README + CLAUDE.md)  
+This repo is a monorepo with three deployable components:
+
+```
+Ashom-iOS-App/
+├── server/        # Node.js + Express API (also serves the built web app)
+├── frontend/      # React 19 web app (SPA, served by the server in production)
+├── mobile_app/    # Flutter app (iOS + Android), native client for the same API
+├── *.html         # Legacy static screens (served in development as a fallback)
+├── render.yaml    # Render.com deployment config
+└── CLAUDE.md      # Guidance for AI coding assistants
+```
+
+| Component | Stack | Notes |
+|-----------|-------|-------|
+| **Backend** (`server/`) | Node.js ≥16, Express 4.18, Supabase (Postgres) with SQLite fallback | 15 API route groups, JWT auth via Supabase, market-data proxies |
+| **Web** (`frontend/`) | React 19, React Router 7, Tailwind CSS 3, Chart.js 4 | 60+ routes; built to `frontend/build` and served by the API in production |
+| **Mobile** (`mobile_app/`) | Flutter 3.10+, go_router, Provider, fl_chart | Native iOS/Android client (`v1.39.0`), talks to the same API |
+
+> **Note:** The legacy numbered HTML screens (`01_*.html` … `37_*.html`) predate the React rewrite. In production the server serves `frontend/build`; in development it falls back to the legacy static HTML.
 
 ---
 
-## 🚀 Quick Start (Windows)
+## 🚀 Quick Start
 
-### Step 1: Prerequisites
+### Prerequisites
+- **Node.js** ≥ 16 and **npm** ≥ 8 — https://nodejs.org/
+- **Flutter** 3.10+ (only if working on the mobile app) — https://flutter.dev/
 
-Make sure you have **Node.js** installed:
-- Download from: https://nodejs.org/
-- Choose LTS version (20.x or higher)
-- Verify installation: Open Command Prompt and type:
-  ```
-  node --version
-  npm --version
-  ```
+### 1. Install backend dependencies
 
-### Step 2: Install Dependencies
-
-1. Open Command Prompt (or PowerShell)
-2. Navigate to the project folder:
-   ```
-   cd path\to\vifm-app
-   ```
-3. Install dependencies:
-   ```
-   npm install
-   ```
-
-### Step 3: Initialize Database
-
-```
-npm run init-db
-npm run seed-db
+```bash
+npm install
 ```
 
-This creates the database and adds 35+ GCC companies with sample data.
+### 2. Configure environment (optional)
 
-### Step 4: Start the Server
+Create a `.env` file in the project root. Without Supabase config the server automatically falls back to SQLite.
 
-```
-npm start
-```
+```env
+PORT=3000
+NODE_ENV=development
 
-You should see:
-```
-✅ Connected to SQLite database
-🚀 VIFM Server Started Successfully!
-   URL: http://localhost:3000
-```
-
-### Step 5: Open in Browser
-
-Open your browser and go to:
-```
-http://localhost:3000
+# Supabase (production). Omit to use the SQLite fallback.
+SUPABASE_URL=your-project-url
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_KEY=your-service-key
 ```
 
-**🎉 Done!** Your VIFM app is now running!
+See [`SUPABASE_SETUP.md`](./SUPABASE_SETUP.md) for full Supabase configuration.
 
----
+### 3. (Optional) Initialize the SQLite fallback database
 
-## 📁 Project Structure
-
+```bash
+npm run init-db    # create tables
+npm run seed-db    # load GCC seed data
 ```
-vifm-app/
-│
-├── server/                      # Backend server
-│   ├── index.js                # Main server file
-│   ├── database.js             # Database connection
-│   ├── initDatabase.js         # Database schema setup
-│   ├── seedDatabase.js         # Sample data population
-│   └── routes/                 # API routes
-│       ├── companies.js        # Companies endpoints
-│       ├── comparisons.js      # Comparisons endpoints
-│       ├── reports.js          # Reports endpoints
-│       ├── screener.js         # Screener endpoints
-│       └── analytics.js        # Analytics endpoints
-│
-├── public/                      # Frontend files
-│   ├── index.html              # Main page
-│   ├── styles.css              # Styles
-│   └── app.js                  # Frontend JavaScript
-│
-├── db/                          # Database
-│   └── vifm.db                 # SQLite database (created on init)
-│
-├── docs/                        # Documentation
-│
-├── package.json                 # Dependencies
-├── .env                         # Configuration
-├── .gitignore                   # Git ignore
-├── .replit                      # Replit config
-└── README.md                    # This file
+
+For Supabase, seed instead with:
+
+```bash
+node server/seedSupabase.js
 ```
+
+### 4. Run the backend
+
+```bash
+npm run dev    # auto-reload (nodemon)
+# or
+npm start      # production mode
+```
+
+The server listens on `0.0.0.0:3000` (override with `PORT=3001 npm start`) so you can reach it from a phone on the same network.
+
+### 5. Run the React web app (development)
+
+In a second terminal:
+
+```bash
+cd frontend
+npm install
+npm start          # http://localhost:3000 (CRA dev server, proxies API calls)
+```
+
+> The web app's dev server proxies API requests to the backend (see `proxy` in `frontend/package.json`). For a production build, run `npm run build` from the repo root, which builds the frontend and lets the backend serve it.
+
+### 6. Run the Flutter mobile app
+
+```bash
+cd mobile_app
+flutter pub get
+flutter run        # select an iOS simulator / Android emulator / device
+```
+
+**Demo login (all clients):** `demo@vifm.com` / `demo123`
 
 ---
 
 ## 🌐 API Endpoints
 
-### Companies
-- `GET /api/companies` - Get all companies with filters
-- `GET /api/companies/:id` - Get company details
-- `GET /api/companies/stats/coverage` - Get coverage statistics
+All endpoints are mounted under `/api` (see `server/index.js`):
 
-### Screener
-- `POST /api/screener` - Screen companies with filters
-
-### Comparisons
-- `POST /api/comparisons` - Create comparison
-- `GET /api/comparisons` - Get saved comparisons
-
-### Reports
-- `GET /api/reports` - Get annual reports with filters
-- `GET /api/reports/:id` - Get specific report
-
-### Analytics
-- `GET /api/analytics/types` - Get comparison types
-- `GET /api/analytics/metrics` - Get available metrics
-
-### Health Check
-- `GET /api/health` - Server health status
+| Route group | Path | Purpose |
+|-------------|------|---------|
+| Auth | `/api/auth` | Signup, login, logout, current user, password reset (Supabase Auth + JWT) |
+| Companies | `/api/companies` | 820+ GCC companies, profiles, coverage stats |
+| Screener | `/api/screener` | Filter companies by financial criteria |
+| Comparisons | `/api/comparisons` | Create/retrieve saved comparisons |
+| Analytics | `/api/analytics` | Comparison types & financial metrics |
+| Reports | `/api/reports` | Annual report metadata & filings |
+| Commodities | `/api/commodities` | Yahoo Finance proxy — gold, silver, platinum, palladium, WTI, Brent |
+| Crypto | `/api/coingecko` | CoinGecko proxy — live cryptocurrency prices |
+| News | `/api/news` | Market news (RSS aggregation) |
+| AI Analyst | `/api/analyst` | AI-powered analysis (Anthropic SDK) |
+| Quant | `/api/quant` | Quant lab — factor models, risk, optimizer, valuation |
+| Ingest | `/api/ingest` | Document/data ingestion (PDF/DOCX/Excel parsing) |
+| University | `/api/university` | Learning content & courses |
+| Certificates | `/api/certificates` | Course certificate issuance & verification |
+| Preferences | `/api/preferences` | User preferences |
+| Health | `/api/health` | Health check |
 
 ---
 
-## 💾 Database Schema
+## ✨ Key Features
 
-### Tables
-
-**companies** - Company information
-- id, symbol, name, country, sector, market_cap, etc.
-
-**financial_metrics** - Financial data
-- revenue, net_income, roe, roa, pe_ratio, etc.
-
-**annual_reports** - Report metadata
-- title, year, file_size, pages, etc.
-
-**comparisons** - Saved comparisons
-- name, type, entities, metrics
-
-**watchlist** - User watchlist
-- company_id, added_at
+- **Market data** — Live crypto (CoinGecko), commodities & oil (Yahoo Finance, with hardcoded fallback), central bank rates, currency converter.
+- **Company intelligence** — Profiles with CFA-style metric categories, screener, side-by-side comparison wizard, annual reports & in-app PDF viewer.
+- **Portfolio** — Multi-asset tracker (stocks, metals, oil, crypto, bonds, cash), multi-portfolio & family views, net worth, Zakat report.
+- **Quant Lab** — Factor models, risk analytics, portfolio optimizer, valuation, regression, relative value, Vision 2030 tools.
+- **AI Analyst** — On-demand AI analysis via the Anthropic SDK.
+- **Sharia & GCC-specific** — Sharia screening, IPO/dividend/earnings calendars, cross-listings, fractional shares.
+- **Learning** — University courses, learning paths, glossary, classroom, verifiable certificates.
+- **Gamification** — Achievement tracking across the experience.
 
 ---
 
-## 🛠️ Available Scripts
+## 🛠️ Scripts (root `package.json`)
 
 ```bash
-# Start the server
-npm start
-
-# Start with auto-reload (development)
-npm run dev
-
-# Initialize database (creates tables)
-npm run init-db
-
-# Populate with sample data
-npm run seed-db
+npm start          # start production server (node server/index.js)
+npm run dev        # start server with nodemon auto-reload
+npm run build      # build the React frontend (cd frontend && npm install && npm run build)
+npm run init-db    # create SQLite tables (fallback DB)
+npm run seed-db    # seed the SQLite fallback DB
+npm run lint       # eslint server/**/*.js
+npm run lint:fix   # eslint --fix
+npm run ios:sync   # npx cap sync ios   (Capacitor)
+npm run ios:open   # npx cap open ios
+npm run ios:run    # npx cap run ios
 ```
 
 ---
 
-## 🎨 Sample Data
+## ☁️ Deployment
 
-The seed script includes **35+ companies** from all 6 GCC countries:
+Deployed to **Render.com** via [`render.yaml`](./render.yaml):
 
-### Countries Covered:
-- 🇸🇦 Saudi Arabia (8 companies)
-- 🇦🇪 UAE (8 companies)  
-- 🇰🇼 Kuwait (5 companies)
-- 🇶🇦 Qatar (5 companies)
-- 🇧🇭 Bahrain (4 companies)
-- 🇴🇲 Oman (4 companies)
-
-### Major Companies Included:
-- Saudi Aramco
-- Al Rajhi Bank
-- SABIC
-- Emirates NBD
-- First Abu Dhabi Bank
-- Qatar National Bank
-- National Bank of Kuwait
-- And many more!
-
----
-
-## 🔧 Configuration
-
-Edit `.env` file to customize:
-
-```env
-# Server Configuration
-PORT=3000
-HOST=localhost
-
-# Database Path
-DB_PATH=./db/vifm.db
-
-# Environment
-NODE_ENV=development
+```yaml
+buildCommand: yarn install && cd frontend && yarn install && CI=false yarn build
+startCommand: node server/index.js
 ```
 
+In production (`NODE_ENV=production`), the Express server serves the built React app from `frontend/build` and exposes the API under `/api`.
+
 ---
 
-## 📱 Features
+## 🗄️ Database
 
-### ✅ Fully Implemented (All 23 Screens)
+- **Supabase (Postgres)** — production. RLS + Supabase Auth. Configure via `.env` and seed with `node server/seedSupabase.js`. Schema: `server/supabase_schema.sql`.
+- **SQLite** — automatic fallback when Supabase is not configured. Initialize with `npm run init-db && npm run seed-db`.
 
-**Core Analysis Tools:**
-- 📊 Dashboard with quick actions
-- 🔍 Company Screener (filter 820+ companies)
-- 📈 9 Comparison Types (Analytics)
-- 📑 Annual Reports Library
-- 👤 Detailed Company Profiles
-- 🧙 5-Step Comparison Wizard
-
-**Market Data Pages:**
-- 💰 Live Cryptocurrency Tracker (10 major coins)
-- 🥇 Live Precious Metals & Oil (6 commodities)
-- 🔄 Auto-refresh every 5 seconds
-- 📊 Color-coded price indicators
-
-**User Features:**
-- 🔐 Login & Registration
-- 💼 Portfolio Tracker
-- ⚙️ Settings & Profile
-- 🏛️ Capital Market Authorities Directory
-- 📋 Listed Companies Browser (820+)
-
-**Technical Features:**
-- 📱 Mobile-first design (430px optimized)
-- 🎨 Modern UI with VIFM brand colors
-- ⚡ Scroll-based header minimization
-- 🔄 8-tab bottom navigation
-- 📊 Tabular data displays
+The service layer (`server/supabaseService.js`) abstracts over both backends.
 
 ---
 
 ## 🐛 Troubleshooting
 
-### "Cannot find module 'express'"
-```
-npm install
-```
+**Port already in use** — change the port: `PORT=3001 npm start`, or stop the process on 3000.
 
-### "EADDRINUSE: Port 3000 already in use"
-Change PORT in `.env` file or stop other applications using port 3000.
+**Yahoo Finance returns 401** — expected; commodity prices fall back to hardcoded values.
 
-### Database not found
-```
-npm run init-db
-npm run seed-db
-```
+**Web app shows nothing** — confirm the backend is running, and in development run the CRA dev server from `frontend/` (it proxies API calls). Check the browser console (F12).
 
-### Nothing displays on frontend
-1. Check if server is running (should see "Server Started" message)
-2. Open browser console (F12) to check for errors
-3. Make sure you're accessing http://localhost:3000
-
----
-
-## 📞 Support
-
-If you encounter issues:
-
-1. Check that Node.js is installed: `node --version`
-2. Make sure dependencies are installed: `npm install`
-3. Verify database is initialized: Check if `db/vifm.db` exists
-4. Check server logs in the terminal
-
----
-
-## 🎯 Next Steps & Roadmap
-
-### Recommended Enhancements
-
-1. **API Integration**
-   - [ ] CoinGecko API for real cryptocurrency data
-   - [ ] Metal Price API for commodities
-   - [ ] GCC stock exchange APIs
-
-2. **Backend Features**
-   - [ ] User authentication system (JWT ready)
-   - [ ] Portfolio management endpoints
-   - [ ] Real-time WebSocket connections
-   - [ ] Export to PDF/Excel
-
-3. **Frontend Enhancements**
-   - [ ] Advanced charting (Chart.js/Recharts)
-   - [ ] Dark mode toggle
-   - [ ] Push notifications
-   - [ ] Multi-language (Arabic/English)
-
-4. **Deployment**
-   - [ ] Docker containerization
-   - [ ] CI/CD pipeline
-   - [ ] Production hosting
-   - [ ] Mobile apps (React Native)
+**Changes not showing** — the server sends aggressive no-cache headers in development; hard-refresh the browser (Ctrl/Cmd+Shift+R).
 
 ---
 
 ## 📄 License
 
-ISC License - Free to use and modify
+ISC License — free to use and modify.
 
 ---
 
-## 👨‍💻 Tech Stack
-
-- **Backend:** Node.js, Express.js
-- **Database:** SQLite3
-- **Frontend:** HTML5, CSS3, Vanilla JavaScript
-- **Styling:** Custom CSS (VIFM brand colors)
-- **Architecture:** RESTful API
-
----
-
-## 🎉 You're All Set!
-
-Your VIFM application is ready to run!
-
-**Start developing:**
-1. Modify frontend files in `/public`
-2. Add API routes in `/server/routes`
-3. Update database schema in `/server/initDatabase.js`
-
-**Happy coding!** 🚀
-
----
-
-**Created:** October 5, 2025  
-**Version:** 1.0.0  
-**VIFM - Virginia Institute of Finance and Management**
+**Ashom** — by VIFM (Virginia Institute of Finance and Management)
+</content>
+</invoke>
