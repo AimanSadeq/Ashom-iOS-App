@@ -11,6 +11,7 @@ import '../services/companies_service.dart';
 import '../services/order_history_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../widgets/notice_banners.dart';
 
 enum OrderSide { buy, sell }
 
@@ -30,7 +31,6 @@ class _OrderScreenState extends State<OrderScreen> {
   int _qty = 10; // mirror React's default qty = 10
   late final TextEditingController _limitController;
   double? _livePrice;
-  bool _liveOk = false;
   Timer? _quoteTimer;
   DateTime? _quoteAt;
 
@@ -62,7 +62,6 @@ class _OrderScreenState extends State<OrderScreen> {
     if (!mounted) return;
     setState(() {
       _livePrice = (base * (1 + pct) * 100).roundToDouble() / 100;
-      _liveOk = true;
       _quoteAt = DateTime.now();
     });
   }
@@ -101,6 +100,12 @@ class _OrderScreenState extends State<OrderScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
       children: [
+        const DemoDataBanner(
+          margin: EdgeInsets.only(bottom: 14),
+          note:
+              'Order book and execution are always simulated — no real order is placed. '
+              'Prices for markets without a free feed (Abu Dhabi, Bahrain, Oman) are illustrative.',
+        ),
         _header(company, text1, text3, dark),
         const SizedBox(height: 18),
         _sideToggle(),
@@ -168,9 +173,7 @@ class _OrderScreenState extends State<OrderScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
               decoration: BoxDecoration(
-                color: _liveOk
-                    ? AppColors.green.withValues(alpha: 0.15)
-                    : AppColors.icAmberFg.withValues(alpha: 0.15),
+                color: AppColors.icAmberFg.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -179,20 +182,18 @@ class _OrderScreenState extends State<OrderScreen> {
                   Container(
                     width: 6,
                     height: 6,
-                    decoration: BoxDecoration(
-                      color: _liveOk ? AppColors.green : AppColors.icAmberFg,
+                    decoration: const BoxDecoration(
+                      color: AppColors.icAmberFg,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 4),
-                  Text(_liveOk ? 'LIVE' : 'STATIC',
+                  const Text('INDICATIVE',
                       style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0.5,
-                          color: _liveOk
-                              ? AppColors.green
-                              : AppColors.icAmberFg)),
+                          color: AppColors.icAmberFg)),
                 ],
               ),
             ),

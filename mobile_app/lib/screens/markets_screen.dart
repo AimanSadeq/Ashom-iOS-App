@@ -100,7 +100,7 @@ class _MarketsScreenState extends State<MarketsScreen> {
               Text('Markets',
                   style: AppTheme.heading(size: 22, color: text1)),
               const SizedBox(height: 2),
-              Text('Live data across GCC exchanges',
+              Text('Indicative data · may be delayed',
                   style: TextStyle(fontSize: 12, color: text3)),
             ],
           ),

@@ -389,7 +389,7 @@ class _GCCMarketsSectionState extends State<_GCCMarketsSection> {
               ),
               const SizedBox(width: 6),
               Text(
-                'Live · $timeStr',
+                'Indicative · $timeStr',
                 style: const TextStyle(fontSize: 11, color: AppColors.text3),
               ),
             ],
@@ -703,7 +703,7 @@ class _AIPromoCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '820+ companies · Live data',
+                                '180+ companies · Indicative data',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -918,7 +918,7 @@ class _TopLevelHubs extends StatelessWidget {
       _Hub(
         icon: Icons.trending_up_rounded,
         label: 'Markets',
-        subtitle: 'GCC indices, top movers & live data',
+        subtitle: 'GCC indices, top movers & quotes',
         route: '/markets',
         iconBg: AppColors.blueLight,
         iconFg: AppColors.blue,
@@ -1273,7 +1273,7 @@ class _MoreToolsSection extends StatelessWidget {
       _Tool(Icons.file_download_rounded, 'PDF Export', 'Portfolio reports', '/reports/export'),
     ]),
     _Group('Analytics', [
-      _Tool(Icons.search_rounded, 'Screener', 'Filter 820+ companies', '/screener'),
+      _Tool(Icons.search_rounded, 'Screener', 'Filter 180+ companies', '/screener'),
       _Tool(Icons.bolt_rounded, 'Quant Lab', 'Factor models & risk', '/quant'),
       _Tool(Icons.description_rounded, 'Annual Reports', 'SEC & CMA filings', '/filings'),
       _Tool(Icons.bar_chart_rounded, 'Options Screener', 'Derivatives market', '/options'),

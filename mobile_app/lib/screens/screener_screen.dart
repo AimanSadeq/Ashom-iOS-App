@@ -117,7 +117,7 @@ class _ScreenerScreenState extends State<ScreenerScreen> {
       children: [
         Text('Screener', style: AppTheme.heading(size: 24, color: text1)),
         const SizedBox(height: 4),
-        Text('Filter 820+ GCC companies',
+        Text('Filter 180+ GCC companies',
             style: TextStyle(fontSize: 12, color: text3)),
         const SizedBox(height: 14),
 

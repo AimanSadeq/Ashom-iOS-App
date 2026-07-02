@@ -8,6 +8,7 @@ import '../services/companies_service.dart';
 import '../services/watchlist_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import '../widgets/notice_banners.dart';
 
 // ---------- shared helpers ----------
 class _P {
@@ -2121,6 +2122,10 @@ class CrossListingsScreen extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(16, 16, 16, 28),
       children: [
         _headerBar(context, 'Cross-Listings', 'Multi-exchange GCC stocks'),
+        const DemoDataBanner(
+          margin: EdgeInsets.only(top: 4, bottom: 14),
+          note: 'Cross-listing prices shown are illustrative samples.',
+        ),
         Container(
           padding: EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -3028,6 +3033,10 @@ class OptionsScreenerScreen extends StatelessWidget {
       children: [
         _headerBar(context, 'Options Screener',
             'Derivatives market — early access'),
+        const DemoDataBanner(
+          margin: EdgeInsets.only(top: 4, bottom: 14),
+          note: 'Option chains and premiums shown are illustrative samples.',
+        ),
         Container(
           padding: EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -3258,6 +3267,11 @@ class FractionalSharesScreen extends StatelessWidget {
       children: [
         _headerBar(context, 'Fractional Shares',
             'Invest any amount — even partial shares'),
+        const DemoDataBanner(
+          margin: EdgeInsets.only(top: 4, bottom: 14),
+          note:
+              'Prices and fractional purchases shown are illustrative — no real trade is placed.',
+        ),
         Container(
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(

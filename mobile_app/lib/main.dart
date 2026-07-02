@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'router.dart';
 import 'services/auth_service.dart';
 import 'services/companies_service.dart';
+import 'services/disclaimer_service.dart';
 import 'services/gamification_service.dart';
 import 'services/market_api.dart';
 import 'services/onboarding_service.dart';
@@ -29,6 +30,7 @@ void main() async {
   final portfolio = PortfolioStore();
   final gamification = GamificationService();
   final onboarding = OnboardingService();
+  final disclaimer = DisclaimerService();
   final pins = PinService();
   final watchlist = WatchlistService();
   final orderHistory = OrderHistoryService();
@@ -40,6 +42,7 @@ void main() async {
     portfolio.load(),
     gamification.load(),
     onboarding.load(),
+    disclaimer.load(),
     pins.load(),
     watchlist.load(),
     orderHistory.load(),
@@ -55,6 +58,7 @@ void main() async {
     portfolio: portfolio,
     gamification: gamification,
     onboarding: onboarding,
+    disclaimer: disclaimer,
     pins: pins,
     watchlist: watchlist,
     orderHistory: orderHistory,
@@ -70,6 +74,7 @@ class AshomApp extends StatelessWidget {
     required this.portfolio,
     required this.gamification,
     required this.onboarding,
+    required this.disclaimer,
     required this.pins,
     required this.watchlist,
     required this.orderHistory,
@@ -81,6 +86,7 @@ class AshomApp extends StatelessWidget {
   final PortfolioStore portfolio;
   final GamificationService gamification;
   final OnboardingService onboarding;
+  final DisclaimerService disclaimer;
   final PinService pins;
   final WatchlistService watchlist;
   final OrderHistoryService orderHistory;
@@ -95,6 +101,7 @@ class AshomApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: portfolio),
         ChangeNotifierProvider.value(value: gamification),
         ChangeNotifierProvider.value(value: onboarding),
+        ChangeNotifierProvider.value(value: disclaimer),
         ChangeNotifierProvider.value(value: pins),
         ChangeNotifierProvider.value(value: watchlist),
         ChangeNotifierProvider.value(value: orderHistory),

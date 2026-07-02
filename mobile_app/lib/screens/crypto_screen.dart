@@ -113,7 +113,7 @@ class _CryptoScreenState extends State<CryptoScreen>
                 padding: const EdgeInsets.symmetric(
                     horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: AppColors.greenBg,
+                  color: AppColors.icAmberBg,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Row(
@@ -123,17 +123,17 @@ class _CryptoScreenState extends State<CryptoScreen>
                       width: 6,
                       height: 6,
                       decoration: const BoxDecoration(
-                        color: AppColors.green,
+                        color: AppColors.icAmberFg,
                         shape: BoxShape.circle,
                       ),
                     ),
                     const SizedBox(width: 6),
                     const Text(
-                      'LIVE',
+                      'INDICATIVE',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.green,
+                        color: AppColors.icAmberFg,
                         letterSpacing: 0.8,
                       ),
                     ),
@@ -143,7 +143,7 @@ class _CryptoScreenState extends State<CryptoScreen>
             ],
           ),
           const SizedBox(height: 4),
-          Text('Refreshes every 30 seconds',
+          Text('Indicative prices · may be delayed · refreshes every 30s',
               style: TextStyle(fontSize: 12, color: text3)),
           const SizedBox(height: 18),
           if (_loading)

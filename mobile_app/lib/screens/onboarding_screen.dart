@@ -20,16 +20,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _Slide(
       title: 'Welcome to Ashom',
       subtitle: 'Your GCC Financial Intelligence Platform',
-      detail: '820+ companies  ·  6 markets  ·  Real-time data',
+      detail: '180+ companies  ·  6 markets  ·  Indicative data',
       isLogo: true,
     ),
     _Slide(
       icon: Icons.trending_up_rounded,
       iconBg: Color(0xFFEBF3FB),
       iconFg: Color(0xFF3878BE),
-      title: 'Live GCC Markets',
+      title: 'GCC Markets',
       subtitle:
-          'Track stocks, metals, oil, and crypto across all 6 GCC exchanges in real time.',
+          'Track stocks, metals, oil, and crypto across all 6 GCC exchanges with indicative prices (may be delayed).',
     ),
     _Slide(
       icon: Icons.memory_rounded,

@@ -32,7 +32,7 @@ class _Suggestion {
 const _en = _Lang(
   title: 'GCC Markets Intelligence',
   subtitle:
-      'Ask about companies, sectors, financials, or market trends across 820+ GCC listed companies.',
+      'Ask about companies, sectors, financials, or market trends across 180+ GCC listed companies.',
   placeholder: 'Ask about GCC markets...',
   powered: 'Powered by VIFM AI',
   suggestions: [
@@ -50,7 +50,7 @@ const _en = _Lang(
 const _ar = _Lang(
   title: 'الذكاء المالي لأسواق الخليج',
   subtitle:
-      'اسأل عن الشركات والقطاعات والبيانات المالية أو اتجاهات السوق عبر أكثر من 820 شركة مدرجة في دول مجلس التعاون الخليجي.',
+      'اسأل عن الشركات والقطاعات والبيانات المالية أو اتجاهات السوق عبر أكثر من 180 شركة مدرجة في دول مجلس التعاون الخليجي.',
   placeholder: 'اسأل عن أسواق الخليج...',
   powered: 'مدعوم من VIFM AI',
   suggestions: [

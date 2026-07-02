@@ -91,12 +91,14 @@ class AuthService extends ChangeNotifier {
   }
 
   AuthUser _userFor(String email) {
-    // Mirrors the placeholder user in frontend/src/App.js.
+    // Mirrors the guest identity in frontend/src/App.js. We deliberately do NOT
+    // show a real person's name so external users never see someone else's
+    // identity. A real signed-in user replaces this via register().
     return AuthUser(
-      name: 'Aiman Sadeq',
+      name: 'Guest',
       email: email,
-      initials: 'AS',
-      title: 'Analyst',
+      initials: 'G',
+      title: 'Guest',
     );
   }
 }

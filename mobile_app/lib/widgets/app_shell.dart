@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +7,7 @@ import '../services/auth_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/theme_controller.dart';
+import 'disclaimer_gate.dart';
 
 /// 430px mobile-first scaffold with frosted header + bottom nav.
 /// Mirrors frontend/src/components/layout/AppShell.jsx.
@@ -48,39 +50,101 @@ class AppShell extends StatelessWidget {
     final scaffoldBg = isDark ? AppColors.darkBg : AppColors.bg;
     return Scaffold(
       backgroundColor: scaffoldBg,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 430),
-          child: Column(
-            children: [
-              _Header(
-                isDark: isDark,
-                onToggleTheme: theme.toggle,
-                onNotifications: () => context.push('/notifications'),
-                onSettings: () => context.push('/settings'),
-                initials: auth.user?.initials ?? 'AS',
-                text2: text2,
-                text3: text3,
-                cardColor: cardColor,
-                borderColor: borderColor,
+      body: Stack(
+        children: [
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 430),
+              child: Column(
+                children: [
+                  _Header(
+                    isDark: isDark,
+                    onToggleTheme: theme.toggle,
+                    onNotifications: () => context.push('/notifications'),
+                    onSettings: () => context.push('/settings'),
+                    initials: auth.user?.initials ?? 'G',
+                    text2: text2,
+                    text3: text3,
+                    cardColor: cardColor,
+                    borderColor: borderColor,
+                  ),
+                  Expanded(
+                    // Solid background prevents any prior frame bleeding through
+                    // during a route swap.
+                    child: ColoredBox(
+                      color: scaffoldBg,
+                      child: child,
+                    ),
+                  ),
+                  _DisclaimerFooter(
+                    cardColor: cardColor,
+                    borderColor: borderColor,
+                    text3: text3,
+                  ),
+                  _BottomNav(
+                    tabs: _tabs,
+                    activeIndex: active,
+                    isDark: isDark,
+                    onTap: (i) => context.go(_tabs[i].path),
+                  ),
+                ],
               ),
-              Expanded(
-                // Solid background prevents any prior frame bleeding through
-                // during a route swap.
-                child: ColoredBox(
-                  color: scaffoldBg,
-                  child: child,
-                ),
-              ),
-              _BottomNav(
-                tabs: _tabs,
-                activeIndex: active,
-                isDark: isDark,
-                onTap: (i) => context.go(_tabs[i].path),
-              ),
-            ],
+            ),
           ),
+          // One-time educational-use disclaimer gate (covers everything until
+          // acknowledged). Mirrors the web DisclaimerGate.
+          const DisclaimerGate(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Persistent compliance footer above the bottom nav.
+/// Mirrors the footer added to AppShell.jsx in the hardening update.
+class _DisclaimerFooter extends StatelessWidget {
+  const _DisclaimerFooter({
+    required this.cardColor,
+    required this.borderColor,
+    required this.text3,
+  });
+
+  final Color cardColor;
+  final Color borderColor;
+  final Color text3;
+
+  @override
+  Widget build(BuildContext context) {
+    final base = TextStyle(fontSize: 10, height: 1.4, color: text3);
+    final link = base.copyWith(
+        decoration: TextDecoration.underline, fontWeight: FontWeight.w600);
+    return Container(
+      width: double.infinity,
+      color: cardColor,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: Text.rich(
+        TextSpan(
+          style: base,
+          children: [
+            const TextSpan(
+                text:
+                    'Educational use only · Not investment advice · Data indicative & may be delayed. '),
+            TextSpan(
+              text: 'Terms',
+              style: link,
+              recognizer: TapGestureRecognizer()
+                ..onTap = () => context.push('/legal/terms'),
+            ),
+            const TextSpan(text: ' · '),
+            TextSpan(
+              text: 'Data sources',
+              style: link,
+              recognizer: TapGestureRecognizer()
+                ..onTap = () => context.push('/legal/data-sources'),
+            ),
+          ],
         ),
+        textAlign: TextAlign.center,
       ),
     );
   }

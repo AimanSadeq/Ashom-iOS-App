@@ -7,6 +7,7 @@ import '../services/onboarding_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../theme/theme_controller.dart';
+import '../widgets/notice_banners.dart';
 
 class _Palette {
   final Color bg;
@@ -1058,6 +1059,11 @@ class PricingScreen extends StatelessWidget {
         const SizedBox(height: 6),
         Text('Switch anytime. Cancel anytime.',
             style: TextStyle(fontSize: 13, color: p.text3)),
+        const ComingSoonBanner(
+          margin: EdgeInsets.only(top: 14),
+          note:
+              'Subscriptions are not yet active — plans are shown for preview. No payment is taken.',
+        ),
         const SizedBox(height: 22),
         for (final plan in _plans) ...[
           Container(
@@ -1205,6 +1211,7 @@ class FeatureInfoScreen extends StatelessWidget {
     required this.icon,
     required this.accent,
     required this.bullets,
+    this.comingSoon,
   });
 
   final String title;
@@ -1212,6 +1219,10 @@ class FeatureInfoScreen extends StatelessWidget {
   final IconData icon;
   final Color accent;
   final List<String> bullets;
+
+  /// When set, shows a "Preview / coming soon" banner so external users aren't
+  /// misled into thinking the feature is live. Mirrors the web ComingSoonBanner.
+  final String? comingSoon;
 
   @override
   Widget build(BuildContext context) {
@@ -1229,6 +1240,11 @@ class FeatureInfoScreen extends StatelessWidget {
           alignment: Alignment.center,
           child: Icon(icon, size: 28, color: accent),
         ),
+        if (comingSoon != null)
+          ComingSoonBanner(
+            margin: const EdgeInsets.only(top: 16),
+            note: comingSoon!,
+          ),
         const SizedBox(height: 18),
         Text(title,
             style: AppTheme.heading(size: 24, color: p.text1)),

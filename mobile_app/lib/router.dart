@@ -268,10 +268,12 @@ GoRouter buildRouter(AuthService auth, OnboardingService onboarding) {
                   'Build on top of Ashom. Read-only REST endpoints for the GCC company dataset, market quotes, and your portfolio.',
               icon: Icons.key_rounded,
               accent: AppColors.icTealFg,
+              comingSoon:
+                  'The public API is not available yet. This page previews what is planned.',
               bullets: [
                 'REST + JSON, generous rate limits',
                 'GCC company financials & ratios',
-                'Live commodities & crypto quotes',
+                'Indicative commodities & crypto quotes',
                 'Portfolio sync (read & write)',
                 'API keys with scoped permissions',
               ],
@@ -285,6 +287,8 @@ GoRouter buildRouter(AuthService auth, OnboardingService onboarding) {
                   'Publish branded research and reports to your clients with your logo, colors, and disclaimers.',
               icon: Icons.business_rounded,
               accent: AppColors.icNavyFg,
+              comingSoon:
+                  'White-label publishing is not available yet — this is a preview of the offering.',
               bullets: [
                 'Custom logo, colors, fonts',
                 'Branded PDF report templates',
@@ -566,20 +570,36 @@ GoRouter buildRouter(AuthService auth, OnboardingService onboarding) {
               title: 'Data Sources',
               sections: [
                 (
+                  'Important',
+                  'All market data in Ashom is indicative and may be delayed. It is obtained from the third-party sources below and is not official, real-time, or guaranteed. Some figures are sample/illustrative where no free source is available — these are clearly labelled "Demo data" in the app. Verify any price with the official exchange before relying on it.',
+                ),
+                (
                   'GCC company data',
-                  'Static dataset of 820+ companies across Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, and Oman. Compiled from public exchange filings and regulator disclosures.',
+                  'Static dataset of 180+ companies across Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, and Oman. Compiled from public exchange filings and regulator disclosures.',
                 ),
                 (
-                  'Cryptocurrency prices',
-                  'CoinGecko public API. Free tier with 60-second cache. Rate-limit fallback to last known prices.',
+                  'Cryptocurrencies',
+                  'CoinGecko public API. Near real-time with a ~90-second cache. Rate-limit fallback to last known prices.',
                 ),
                 (
-                  'Commodities (gold, silver, oil)',
-                  'Yahoo Finance public endpoints. Falls back to last-cached prices when upstream is unavailable.',
+                  'Metals & oil',
+                  'Yahoo Finance public endpoints. Delayed (~1 min cache). Falls back to last-cached prices when upstream is unavailable.',
+                ),
+                (
+                  'Indices & stock prices',
+                  'Yahoo Finance for Saudi, Dubai, Qatar, and Kuwait (delayed ~30–90s). ADX, Qatar (QSI), Bahrain (BAX), and Oman (MSM30) are scraped from public exchange websites and refreshed periodically.',
+                ),
+                (
+                  'Markets without a free live feed',
+                  'Individual stock prices for Abu Dhabi (ADX), Bahrain, and Oman are not available from a free source and are shown as clearly-labelled demo values on the relevant pages.',
                 ),
                 (
                   'Central bank rates',
                   'GCC central bank websites, polled periodically. Not real-time.',
+                ),
+                (
+                  'Attribution',
+                  '"Yahoo" and "Yahoo Finance" are trademarks of their respective owner. CoinGecko data is used under its public API terms. Exchange data belongs to the respective exchanges (Saudi Exchange, DFM, ADX, Qatar Stock Exchange, Boursa Kuwait, Bahrain Bourse, Muscat Stock Exchange).',
                 ),
               ],
             ),
