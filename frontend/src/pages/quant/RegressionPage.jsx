@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { ScatterChart, Play, Info } from 'lucide-react';
 import { Bar, Scatter } from 'react-chartjs-2';
 import PageHeader from '../../components/shared/PageHeader';
+import { DataNotice } from '../../components/shared/DataNotice';
 import LoadingState from '../../components/shared/LoadingState';
 import ErrorState from '../../components/shared/ErrorState';
 import useApi from '../../hooks/useApi';
@@ -185,8 +186,50 @@ export default function RegressionPage() {
     if (!company || independents.length === 0) return;
     setRunning(true); setRunError(null);
     try {
-      const res = await quant.regression({ company, dependent, independents });
-      setResults(res);
+      // The endpoint takes typed variable descriptors, not bare ids:
+      //   dependent:   { type: 'stock_return', symbol } | { type: 'factor', name }
+      //   independents: [{ type: 'factor'|'macro'|'stock_return', name|symbol }]
+      // Sending {company, dependent:'returns', independents:['oil']} returned
+      // "Dependent variable must specify type ... and symbol/name".
+      //
+      // Map each UI variable id onto a series that actually exists in
+      // factor-returns.json / macro-data.json.
+      const toVar = (id) => {
+        switch (id) {
+          case 'returns':       return { type: 'stock_return', symbol: company };
+          case 'market':        return { type: 'factor', name: 'market_return' };
+          case 'oil':           return { type: 'macro',  name: 'oil_wti' };
+          case 'interest_rate': return { type: 'macro',  name: 'gcc_interbank_rate' };
+          case 'exchange_rate': return { type: 'macro',  name: 'usd_sar' };
+          // No GDP, inflation or volume series exists in the dataset.
+          default:              return null;
+        }
+      };
+
+      const dep = toVar(dependent);
+      const inds = independents.map(toVar).filter(Boolean);
+      const unsupported = independents.filter(id => !toVar(id));
+
+      if (!dep) {
+        throw new Error(`"${dependent}" is not available as a dependent variable in this dataset.`);
+      }
+      if (inds.length === 0) {
+        throw new Error('None of the selected independent variables are available in this dataset.');
+      }
+
+      const res = await quant.regression({ dependent: dep, independents: inds, range: '3Y' });
+      const d = res?.data || {};
+      const reg = d.regression || {};
+
+      setResults({
+        ...reg,
+        observations: d.observations,
+        variableLabels: d.independents,
+        diagnostics: d.diagnostics,
+        note: unsupported.length
+          ? `Not available in this dataset and excluded: ${unsupported.join(', ')}.`
+          : null,
+      });
     } catch (err) { setRunError(err.message); }
     finally { setRunning(false); }
   }
@@ -194,6 +237,7 @@ export default function RegressionPage() {
   return (
     <div style={s.page}>
       <PageHeader title="Regression Lab" subtitle="OLS regression with diagnostics" backTo="/quant" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
 
       <div style={s.body}>
         {/* Company selector */}

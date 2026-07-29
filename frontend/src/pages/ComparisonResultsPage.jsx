@@ -4,7 +4,9 @@ import { ArrowUpRight, ArrowDownRight, Minus, BarChart2 } from 'lucide-react';
 import { Bar } from 'react-chartjs-2';
 
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 import LoadingState from '../components/shared/LoadingState';
+import EmptyState from '../components/shared/EmptyState';
 import { comparisons } from '../services/api';
 import { CHART_COLORS, BASE_OPTIONS } from '../components/shared/ChartSetup';
 
@@ -50,44 +52,100 @@ function formatMetricName(id) {
   return id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function generateMockResults(wizard) {
-  const { metrics = [], firstEntity, secondEntity } = wizard;
+// Map the API's category keys onto this page's display categories.
+const CATEGORY_LABELS = {
+  profitability: 'Profitability',
+  liquidity:     'Liquidity',
+  leverage:      'Leverage',
+  valuation:     'Valuation',
+  efficiency:    'Efficiency',
+  growth:        'Growth',
+  cashflow:      'Cash Flow',
+  dividend:      'Dividend',
+  market:        'Market',
+};
+
+/**
+ * Adapt POST /api/comparisons/generate into this page's shape.
+ *
+ * The API returns { success, data: { comparisonType, entities: [e1, e2] } },
+ * where each entity carries a nested metrics tree
+ * ({ profitability: { roe, roa, ... }, liquidity: { ... }, ... }).
+ *
+ * This page renders a flat list of { id, name, category, value1, value2, diff }.
+ * That adapter never existed: the wizard stored the raw envelope, this page
+ * checked `localResults?.metrics` — which the envelope does not have — and
+ * silently fell back to randomly generated numbers. A user completing the
+ * wizard never saw the figures the API actually returned.
+ */
+function adaptComparison(payload) {
+  const data = payload?.data || payload;
+  const entities = data?.entities;
+  if (!Array.isArray(entities) || entities.length < 2) return null;
+
+  const [e1, e2] = entities;
+  const rows = [];
+
+  const categories = new Set([
+    ...Object.keys(e1.metrics || {}),
+    ...Object.keys(e2.metrics || {}),
+  ]);
+
+  categories.forEach((catKey) => {
+    // `financials` holds raw statement values, not comparable ratios.
+    if (catKey === 'financials') return;
+
+    const m1 = (e1.metrics || {})[catKey] || {};
+    const m2 = (e2.metrics || {})[catKey] || {};
+    const keys = new Set([...Object.keys(m1), ...Object.keys(m2)]);
+
+    keys.forEach((key) => {
+      const v1 = m1[key];
+      const v2 = m2[key];
+      if (v1 == null && v2 == null) return; // drop metrics neither side reports
+
+      rows.push({
+        id: key,
+        name: formatMetricName(key),
+        category: CATEGORY_LABELS[catKey] || METRIC_TO_CATEGORY[key] || 'Other',
+        value1: v1 ?? null,
+        value2: v2 ?? null,
+        diff: (v1 != null && v2 != null) ? +(v1 - v2).toFixed(2) : null,
+      });
+    });
+  });
+
+  if (rows.length === 0) return null;
+
   return {
-    type: wizard.type,
-    firstEntity,
-    secondEntity,
-    metrics: metrics.map((id) => {
-      const v1 = +(Math.random() * 30 + 5).toFixed(2);
-      const v2 = +(Math.random() * 30 + 5).toFixed(2);
-      return {
-        id,
-        name: formatMetricName(id),
-        category: METRIC_TO_CATEGORY[id] || 'Other',
-        value1: v1,
-        value2: v2,
-        diff: +(v1 - v2).toFixed(2),
-      };
-    }),
+    type: data.comparisonType,
+    firstEntity:  { name: e1.name, ticker: e1.ticker, country: e1.country, sector: e1.sector },
+    secondEntity: { name: e2.name, ticker: e2.ticker, country: e2.country, sector: e2.sector },
+    dataAvailable: [e1.dataAvailable !== false, e2.dataAvailable !== false],
+    metrics: rows,
   };
 }
 
 export default function ComparisonResultsPage() {
   const navigate = useNavigate();
   const wizard = useMemo(() => getWizardData(), []);
-  const localResults = getResults();
+  // Adapt whatever the wizard stored into this page's shape.
+  const localResults = useMemo(() => adaptComparison(getResults()), []);
   const [apiResults, setApiResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Try to fetch saved comparisons from the API
+  // Fall back to the most recent saved comparison only if the wizard left
+  // nothing usable behind.
   useEffect(() => {
-    if (localResults?.metrics) return; // already have local results, skip API call
+    if (localResults) return;
     setLoading(true);
     comparisons.list()
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setApiResults(data[0]);
-        }
+        // The endpoint returns { comparisons: [...] }, not a bare array —
+        // the previous Array.isArray(data) check never passed.
+        const list = Array.isArray(data) ? data : data?.comparisons || [];
+        if (list.length > 0) setApiResults(adaptComparison(list[0]));
       })
       .catch((err) => {
         setError(err.message);
@@ -95,16 +153,15 @@ export default function ComparisonResultsPage() {
       .finally(() => {
         setLoading(false);
       });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [localResults]);
 
-  // Use local results first, then API results, then mock data as last resort
-  const results = useMemo(() => {
-    if (localResults?.metrics) return localResults;
-    if (apiResults?.metrics) return apiResults;
-    return generateMockResults(wizard);
-  }, [localResults, apiResults, wizard]);
+  // Real results only. There is deliberately no random-data fallback: showing
+  // invented numbers that look like a completed analysis is worse than showing
+  // nothing, because the user cannot tell the difference.
+  const results = localResults || apiResults;
 
   const categories = useMemo(() => {
+    if (!results) return ['All'];
     const cats = new Set(results.metrics.map((m) => m.category));
     return ['All', ...Array.from(cats)];
   }, [results]);
@@ -112,23 +169,57 @@ export default function ComparisonResultsPage() {
   const [activeCategory, setActiveCategory] = useState('All');
 
   const filteredMetrics = useMemo(() => {
+    if (!results) return [];
     if (activeCategory === 'All') return results.metrics;
     return results.metrics.filter((m) => m.category === activeCategory);
   }, [results, activeCategory]);
 
   function getWinner(metric) {
+    // A metric only has a winner when both sides report a value.
+    if (metric.value1 == null || metric.value2 == null) return 'tie';
     const higherBetter = HIGHER_IS_BETTER.has(metric.id);
     if (metric.value1 === metric.value2) return 'tie';
     if (higherBetter) return metric.value1 > metric.value2 ? 'first' : 'second';
     return metric.value1 < metric.value2 ? 'first' : 'second';
   }
 
-  const entity1 = results.firstEntity || wizard.firstEntity;
-  const entity2 = results.secondEntity || wizard.secondEntity;
+  const entity1 = results?.firstEntity || wizard.firstEntity;
+  const entity2 = results?.secondEntity || wizard.secondEntity;
+
+  // No usable results: say so, rather than rendering an analysis of nothing.
+  if (!loading && !results) {
+    return (
+      <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+        <PageHeader
+          title="Comparison Results"
+          subtitle={entity1?.name && entity2?.name ? `${entity1.name} vs ${entity2.name}` : undefined}
+          backTo="/analytics"
+        />
+        <div className="px-4 py-5 space-y-4">
+          <EmptyState
+            title="No comparison data"
+            description={
+              error
+                ? `Could not load comparison results: ${error}`
+                : 'No financial data is available for the selected entities. Run the comparison wizard again, or pick entities with reported figures.'
+            }
+          />
+          <button
+            onClick={() => navigate('/wizard/type')}
+            className="w-full py-2.5 text-[13px] font-semibold text-white rounded-md font-body"
+            style={{ background: 'var(--navy)' }}
+          >
+            Start a new comparison
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <PageHeader title="Comparison Results" subtitle={entity1?.name && entity2?.name ? `${entity1.name} vs ${entity2.name}` : undefined} backTo="/analytics" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
 
       <div className="px-4 py-5 space-y-4">
         {loading && <LoadingState message="Loading comparison results..." />}

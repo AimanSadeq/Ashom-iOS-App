@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Globe2, Droplets, BookOpen, Landmark, Network, ArrowLeft, Play } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
+import { DataNotice } from '../../components/shared/DataNotice';
 import LoadingState from '../../components/shared/LoadingState';
 import ErrorState from '../../components/shared/ErrorState';
 import useApi from '../../hooks/useApi';
@@ -112,8 +113,77 @@ export default function GCCToolsPage() {
   async function handleRun() {
     setRunning(true); setRunError(null);
     try {
-      const res = await quant.riskMetrics({ ...inputs, gccTool: activeTool });
-      setResults(res);
+      // There is no `gccTool` mode on /risk-metrics — that call always failed
+      // with "Required: symbol". Each tool is routed to the endpoint that can
+      // actually answer it, and the two with no data source say so plainly
+      // rather than issuing a request that cannot succeed.
+      let mapped;
+
+      if (activeTool === 'oil') {
+        // Oil sensitivity = regression of the stock's returns on WTI.
+        if (!inputs.company) throw new Error('Select a company first.');
+        const RANGE = { '1y': '1Y', '3y': '3Y', '5y': '5Y' };
+        const res = await quant.regression({
+          dependent: { type: 'stock_return', symbol: inputs.company },
+          independents: [{ type: 'macro', name: 'oil_wti' }],
+          range: RANGE[inputs.period] || '3Y',
+        });
+        const reg = res?.data?.regression || {};
+        mapped = {
+          metrics: {
+            'Oil Beta':      reg.coefficients?.[1]?.toFixed(4) ?? '--',
+            'Intercept':     reg.coefficients?.[0]?.toFixed(4) ?? '--',
+            'R-Squared':     reg.rSquared?.toFixed(4) ?? '--',
+            't-Statistic':   reg.tStats?.[1]?.toFixed(2) ?? '--',
+            'Observations':  res?.data?.observations ?? '--',
+          },
+          message: 'Oil beta is the sensitivity of this stock\'s daily returns to WTI. Derived from sample data.',
+        };
+
+      } else if (activeTool === 'regional') {
+        // Cross-market correlation, using the largest company in each selected
+        // market as that market's proxy (no index-level price series exists).
+        const MARKET_COUNTRY = {
+          'Tadawul': 'Saudi Arabia', 'ADX': 'UAE', 'DFM': 'UAE',
+          'Boursa Kuwait': 'Kuwait', 'QSE': 'Qatar', 'Bahrain': 'Bahrain', 'MSM': 'Oman',
+        };
+        const markets = inputs.markets || [];
+        if (markets.length < 2) throw new Error('Select at least 2 markets.');
+
+        const proxies = [];
+        const labels = [];
+        markets.forEach(mk => {
+          const country = MARKET_COUNTRY[mk];
+          const co = companiesList.find(c => c.country === country && !proxies.includes(c.symbol));
+          if (co) { proxies.push(co.symbol); labels.push(`${mk} (${co.symbol})`); }
+        });
+        if (proxies.length < 2) throw new Error('Could not resolve enough market proxies.');
+
+        const res = await quant.correlationMatrix(proxies, '1Y');
+        const m = res?.data?.correlationMatrix || [];
+        const metrics = {};
+        for (let i = 0; i < labels.length; i++) {
+          for (let j = i + 1; j < labels.length; j++) {
+            metrics[`${labels[i]} ↔ ${labels[j]}`] = m[i]?.[j]?.toFixed(3) ?? '--';
+          }
+        }
+        mapped = {
+          metrics,
+          message: 'Correlations use the largest listed company in each market as a proxy, since no index-level price series is available.',
+        };
+
+      } else {
+        // Islamic screening and sovereign-wealth ownership need data the
+        // platform does not hold (AAOIFI screening inputs; SWF registers).
+        mapped = {
+          metrics: null,
+          message: activeTool === 'islamic'
+            ? 'Sharia screening requires AAOIFI-standard inputs (debt/market-cap, non-compliant income ratios) that are not present in this dataset. Connect a screening data provider to enable this tool.'
+            : 'Sovereign wealth fund ownership data is not available in this dataset. Connect an ownership/shareholder-register source to enable this tool.',
+        };
+      }
+
+      setResults(mapped);
     } catch (err) { setRunError(err.message); }
     finally { setRunning(false); }
   }
@@ -136,6 +206,7 @@ export default function GCCToolsPage() {
     return (
       <div style={s.page}>
         <PageHeader title={toolInfo.title} subtitle={toolInfo.desc} backTo="/quant/gcc-tools" />
+        <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
 
         <div style={s.body}>
           <button onClick={() => setActiveTool(null)} style={s.backBtn}>

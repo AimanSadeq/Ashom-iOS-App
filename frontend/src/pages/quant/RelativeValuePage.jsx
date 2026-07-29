@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { BarChart3, Play, ArrowUpDown } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
+import { DataNotice } from '../../components/shared/DataNotice';
 import LoadingState from '../../components/shared/LoadingState';
 import ErrorState from '../../components/shared/ErrorState';
 import useApi from '../../hooks/useApi';
@@ -86,8 +87,38 @@ export default function RelativeValuePage() {
     if (!company) return;
     setRunning(true); setRunError(null);
     try {
-      const res = await quant.relativeValue({ company, metric });
-      setResults(res);
+      // The endpoint scans by `sector`, not by company — sending
+      // {company, metric} was silently ignored and it scanned the whole market.
+      // Look up the selected company's sector, scan that, then pull the
+      // company's own row out of the result.
+      const selected = companiesList.find(c => (c.symbol || c.id) === company);
+      const res = await quant.relativeValue(selected?.sector ? { sector: selected.sector } : {});
+
+      const analysis = res?.data?.sectorAnalysis || {};
+      const bucket = selected?.sector ? analysis[selected.sector] : Object.values(analysis)[0];
+      const peers = bucket?.companies || [];
+      const target = peers.find(c => c.symbol === company);
+      const median = bucket?.sectorMedian || {};
+
+      // Verdict from the company's P/E against its sector median.
+      let verdict = null, discount = null;
+      if (target?.pe != null && median?.pe) {
+        discount = (target.pe - median.pe) / median.pe;
+        verdict = discount < -0.1 ? 'undervalued' : discount > 0.1 ? 'overvalued' : 'fairly valued';
+      }
+
+      setResults({
+        target: target ? {
+          name: target.name,
+          pe: target.pe,
+          pb: target.pb,
+          evEbitda: target.evEbitda ?? null,
+        } : null,
+        peers,
+        sectorMedian: median,
+        verdict,
+        discount,
+      });
     } catch (err) { setRunError(err.message); }
     finally { setRunning(false); }
   }
@@ -108,6 +139,7 @@ export default function RelativeValuePage() {
   return (
     <div style={s.page}>
       <PageHeader title="Relative Value" subtitle="Peer comparison scanner" backTo="/quant" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
 
       <div style={s.body}>
         {/* Company selector */}

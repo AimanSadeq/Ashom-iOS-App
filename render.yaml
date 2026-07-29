@@ -2,8 +2,42 @@ services:
   - type: web
     name: ashom
     runtime: node
-    buildCommand: yarn install && cd frontend && yarn install && CI=false yarn build
+    # Use npm, not yarn: the project's lockfiles are npm lockfiles, so
+    # `yarn install` resolved dependencies from scratch and could produce a
+    # different tree on every deploy.
+    #
+    # `npm ci` needs a committed lockfile. .gitignore previously excluded
+    # package-lock.json, so it is not in the repository yet — commit both
+    # package-lock.json and frontend/package-lock.json to get reproducible
+    # builds. Until then the `|| npm install` fallback keeps deploys working.
+    buildCommand: >-
+      (npm ci || npm install) &&
+      (npm --prefix frontend ci || npm --prefix frontend install) &&
+      CI=false npm --prefix frontend run build
     startCommand: node server/index.js
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
+      # Pin the Node major version. better-sqlite3 is a native module compiled
+      # against a specific Node ABI; an unpinned runtime meant a platform Node
+      # upgrade could crash the server at startup.
+      - key: NODE_VERSION
+        value: "20"
+      # Required secrets — set these in the Render dashboard, never in this file.
+      #   ADMIN_PASSWORD     ingestion API; there is no fallback, unset disables it
+      #   ANTHROPIC_API_KEY  AI Analyst; unset returns 503
+      #   CORS_ORIGIN        comma-separated allowlist; unset means open CORS
+      #                      with credentials disabled
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false

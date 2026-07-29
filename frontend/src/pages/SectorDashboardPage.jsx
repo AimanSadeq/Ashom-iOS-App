@@ -6,6 +6,7 @@ import {
   Factory, Cpu, ShoppingBag, Wheat, HardHat
 } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 import LoadingState from '../components/shared/LoadingState';
 import ErrorState from '../components/shared/ErrorState';
 import useApi from '../hooks/useApi';
@@ -119,6 +120,7 @@ export default function SectorDashboardPage() {
   if (loading) return (
     <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <PageHeader title="Sector Dashboard" backTo="/" subtitle="Industry Analysis" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
       <LoadingState message="Loading sector data..." />
     </div>
   );

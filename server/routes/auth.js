@@ -1,7 +1,7 @@
 // Authentication Routes
 const express = require('express');
 const router = express.Router();
-const { supabase } = require('../supabaseClient');
+const { supabase, createUserClient } = require('../supabaseClient');
 
 // Sign up with email and password
 router.post('/signup', async (req, res) => {
@@ -11,6 +11,18 @@ router.post('/signup', async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         error: 'Email and password are required'
+      });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({
+        error: 'Please provide a valid email address'
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        error: 'Password must be at least 8 characters'
       });
     }
 
@@ -56,28 +68,18 @@ router.post('/login', async (req, res) => {
       });
     }
 
-    // Demo account fallback
-    if (email === 'demo@vifm.com' && password === 'demo123') {
-      return res.json({
-        success: true,
-        message: 'Demo login successful',
-        token: 'demo-token',
-        user: {
-          id: 'demo-user-id',
-          email: 'demo@vifm.com',
-          full_name: 'Demo User'
-        },
-        session: {
-          access_token: 'demo-token',
-          refresh_token: 'demo-refresh-token'
-        },
-        is_demo: true
-      });
-    }
+    // NOTE: the hardcoded demo@vifm.com / demo123 backdoor that used to sit
+    // here has been removed. It issued the literal token 'demo-token', which
+    // the university and preferences routes accepted as a real session — and
+    // which isAdmin() treated as an administrator.
+    //
+    // To keep a demo account, create demo@vifm.com as a genuine Supabase Auth
+    // user. It then logs in through the normal path below and receives a real,
+    // expiring JWT with no special privileges.
 
     if (!supabase) {
       return res.status(503).json({
-        error: 'Supabase authentication is not configured. Use demo@vifm.com / demo123 for demo access.'
+        error: 'Authentication is not configured on this server.'
       });
     }
 
@@ -104,23 +106,13 @@ router.post('/login', async (req, res) => {
 });
 
 // Sign out
-router.post('/logout', async (req, res) => {
-  try {
-    if (!supabase) {
-      return res.json({ message: 'Logged out successfully' });
-    }
-
-    const { error } = await supabase.auth.signOut();
-
-    if (error) throw error;
-
-    res.json({ message: 'Logged out successfully' });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(400).json({
-      error: error.message || 'Failed to logout'
-    });
-  }
+// The `supabase` client is a single module-level instance shared by every
+// request. Calling supabase.auth.signOut() on it used to mutate that shared
+// state, so one user logging out could disturb another user's in-flight
+// request. Sessions here are stateless JWTs, so logout is a client-side
+// concern: the client discards the token. Nothing to invalidate server-side.
+router.post('/logout', (req, res) => {
+  res.json({ message: 'Logged out successfully' });
 });
 
 // Get current user
@@ -213,15 +205,22 @@ router.post('/update-password', async (req, res) => {
       });
     }
 
+    if (password.length < 8) {
+      return res.status(400).json({
+        error: 'Password must be at least 8 characters'
+      });
+    }
+
     const token = authHeader.replace('Bearer ', '');
 
-    // Set the session
-    await supabase.auth.setSession({
-      access_token: token,
-      refresh_token: req.body.refresh_token
-    });
+    // Act as this one user via a per-request client rather than mutating the
+    // shared client's session (which every other concurrent request also uses).
+    const userClient = createUserClient(token);
+    if (!userClient) {
+      return res.status(401).json({ error: 'Invalid session' });
+    }
 
-    const { error } = await supabase.auth.updateUser({
+    const { error } = await userClient.auth.updateUser({
       password: password
     });
 

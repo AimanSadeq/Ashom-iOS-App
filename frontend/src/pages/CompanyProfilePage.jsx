@@ -8,6 +8,7 @@ import { Line } from 'react-chartjs-2';
 import '../components/shared/ChartSetup';
 
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 import LoadingState from '../components/shared/LoadingState';
 import ErrorState from '../components/shared/ErrorState';
 import useApi from '../hooks/useApi';
@@ -349,6 +350,7 @@ export default function CompanyProfilePage() {
   if (loading) return (
     <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <PageHeader title="Company" backTo="/companies" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
       <LoadingState message="Loading company profile..." />
     </div>
   );

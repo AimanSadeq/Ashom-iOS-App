@@ -3,18 +3,75 @@
 // Automatically falls back to SQLite if Supabase is not configured
 
 const { supabaseAdmin, isSupabaseEnabled } = require('./supabaseClient');
-const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-// Ensure db directory exists
-const dbDir = path.join(__dirname, '../db');
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+// SQLite fallback — lazily initialised.
+//
+// This module was previously constructing a better-sqlite3 Database at import
+// time, unconditionally, even when Supabase was configured and SQLite would
+// never be touched. Every router imports this file, so any failure to load the
+// native binding (a Node ABI mismatch, a missing prebuild, a platform without
+// build tools) crashed the entire server at startup rather than degrading.
+//
+// Now the native module is only required if a query actually needs it.
+let _sqliteDb = null;
+
+function getSqliteDb() {
+  if (_sqliteDb) return _sqliteDb;
+
+  const Database = require('better-sqlite3');
+  const dbDir = path.join(__dirname, '../db');
+  if (!fs.existsSync(dbDir)) {
+    fs.mkdirSync(dbDir, { recursive: true });
+  }
+  _sqliteDb = new Database(path.join(dbDir, 'vifm.db'));
+  return _sqliteDb;
 }
 
-// SQLite fallback
-const sqliteDb = new Database(path.join(dbDir, 'vifm.db'));
+// Proxy so existing `sqliteDb.prepare(...)` call sites keep working unchanged
+// while still deferring the native require until first use.
+const sqliteDb = {
+  prepare: (...args) => getSqliteDb().prepare(...args),
+  exec: (...args) => getSqliteDb().exec(...args),
+  pragma: (...args) => getSqliteDb().pragma(...args)
+};
+
+// Country identifiers are inconsistent across the codebase: clients send
+// slugs ('saudi', 'uae') and ISO codes ('SA', 'AE'), while the companies table
+// stores display names ('Saudi Arabia', 'UAE'). Filtering passed the client
+// value straight through, so every country filter in the UI returned zero
+// results. Normalise to the stored display name at the query boundary.
+const COUNTRY_ALIASES = {
+  saudi: 'Saudi Arabia',
+  'saudi arabia': 'Saudi Arabia',
+  sa: 'Saudi Arabia',
+  ksa: 'Saudi Arabia',
+  uae: 'UAE',
+  'united arab emirates': 'UAE',
+  ae: 'UAE',
+  kuwait: 'Kuwait',
+  kw: 'Kuwait',
+  qatar: 'Qatar',
+  qa: 'Qatar',
+  bahrain: 'Bahrain',
+  bh: 'Bahrain',
+  oman: 'Oman',
+  om: 'Oman'
+};
+
+function normalizeCountry(value) {
+  if (!value) return value;
+  return COUNTRY_ALIASES[String(value).trim().toLowerCase()] || value;
+}
+
+// PostgREST `.or()` takes a filter expression as a string, so unescaped commas
+// and parentheses in user input are parsed as filter syntax rather than as
+// literal characters. This is not SQL injection, but it does let a search term
+// alter the query's filter structure.
+function escapePostgrestPattern(value) {
+  return String(value).replace(/[,()\\]/g, '');
+}
 
 class SupabaseService {
   constructor() {
@@ -32,7 +89,7 @@ class SupabaseService {
       let query = supabaseAdmin.from('companies').select('*');
 
       if (filters.country) {
-        query = query.eq('country', filters.country);
+        query = query.eq('country', normalizeCountry(filters.country));
       }
       if (filters.sector) {
         query = query.eq('sector', filters.sector);
@@ -41,7 +98,7 @@ class SupabaseService {
         query = query.eq('industry', filters.industry);
       }
       if (filters.search) {
-        query = query.or(`name.ilike.%${filters.search}%,symbol.ilike.%${filters.search}%`);
+        query = query.or(`name.ilike.%${escapePostgrestPattern(filters.search)}%,symbol.ilike.%${escapePostgrestPattern(filters.search)}%`);
       }
 
       const { data, error } = await query.order('market_cap', { ascending: false });
@@ -54,7 +111,7 @@ class SupabaseService {
 
       if (filters.country) {
         sql += ' AND country = ?';
-        params.push(filters.country);
+        params.push(normalizeCountry(filters.country));
       }
       if (filters.sector) {
         sql += ' AND sector = ?';
@@ -892,26 +949,33 @@ class SupabaseService {
   }
 
   // --- Admin Users ---
+  // Admin status comes exclusively from the admin_users table. There is no
+  // hardcoded allowlist: 'demo@vifm.com' used to be listed here, and because
+  // the demo session token shipped in client code, that made every anonymous
+  // visitor an administrator. Bootstrap the first admin with a direct SQL
+  // insert into admin_users, not with code.
   async isAdmin(email) {
     if (!email) return false;
-    // Hardcoded fallback for demo/admin accounts before tables exist
-    var adminEmails = ['admin@vifm.com', 'demo@vifm.com'];
-    if (adminEmails.includes(email.toLowerCase())) return true;
-    if (this.useSupabase) {
-      try {
-        const { data } = await supabaseAdmin
-          .from('admin_users')
-          .select('id')
-          .eq('email', email.toLowerCase())
-          .eq('is_active', true)
-          .single();
-        return !!data;
-      } catch (err) {
-        if (err && err.code === 'PGRST205') return adminEmails.includes(email.toLowerCase());
+    if (!this.useSupabase) return false;
+
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('admin_users')
+        .select('id')
+        .eq('email', email.toLowerCase())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) {
+        console.error('isAdmin lookup failed, denying access:', error.message);
         return false;
       }
+      return !!data;
+    } catch (err) {
+      // Fail closed — a lookup failure must never grant admin.
+      console.error('isAdmin lookup threw, denying access:', err && err.message);
+      return false;
     }
-    return false;
   }
 
   async getAdminUsers() {
@@ -1496,14 +1560,18 @@ class SupabaseService {
       if (filters.sector) {
         query = query.eq('companies.sector', filters.sector);
       }
+      // The annual_reports table defines fiscal_year, not year. Filtering and
+      // ordering on `year` made PostgREST reject the query outright
+      // ("column annual_reports.year does not exist"), so GET /api/reports
+      // returned HTTP 500 unconditionally.
       if (filters.year) {
-        query = query.eq('year', filters.year);
+        query = query.eq('fiscal_year', filters.year);
       }
       if (filters.search) {
         query = query.or(`title.ilike.%${filters.search}%,companies.name.ilike.%${filters.search}%`);
       }
 
-      query = query.order('year', { ascending: false });
+      query = query.order('fiscal_year', { ascending: false });
 
       if (filters.limit) {
         query = query.limit(filters.limit);
@@ -1597,15 +1665,19 @@ class SupabaseService {
       // First get companies with their latest financial metrics
       let query = supabaseAdmin
         .from('companies')
+        // `year` was selected here alongside `fiscal_year`, but the schema only
+        // defines fiscal_year — PostgREST rejected the whole query with
+        // "column financial_metrics_1.year does not exist", so the screener
+        // returned HTTP 500 for every request.
         .select(`
           *,
           financial_metrics (
-            roe, pe_ratio, revenue, net_income, fiscal_year, year
+            roe, pe_ratio, revenue, net_income, fiscal_year
           )
         `);
 
       if (filters.countries && filters.countries.length > 0) {
-        query = query.in('country', filters.countries);
+        query = query.in('country', filters.countries.map(normalizeCountry));
       }
       if (filters.sectors && filters.sectors.length > 0) {
         query = query.in('sector', filters.sectors);

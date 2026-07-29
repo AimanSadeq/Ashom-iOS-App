@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Building2, DollarSign, PieChart, TrendingUp, Layers, Target, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 
 const COMPANIES = [
   { name: 'Saudi Aramco', ticker: '2222.SR', price: 28.45, currency: 'SAR', country: 'Saudi Arabia' },
@@ -70,6 +71,7 @@ export default function FractionalSharesPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Fractional Shares" subtitle="Invest with Any Amount" backTo="/learning" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="simulated" /></div>
 
       <div style={{ padding: '0 16px 100px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* Hero Card */}

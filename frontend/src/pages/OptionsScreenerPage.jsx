@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Info, TrendingUp, TrendingDown } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 
 /* ── Underlying stocks ── */
 const UNDERLYINGS = {
@@ -51,6 +52,7 @@ export default function OptionsScreenerPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Options Screener" subtitle="GCC Derivatives Market" backTo="/analytics" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="demo" /></div>
 
       {/* Info banner */}
       <div className="mx-4 mt-4 p-3 rounded-lg flex items-start gap-2" style={{ background: 'var(--blue-light)', border: '1px solid var(--border)' }}>

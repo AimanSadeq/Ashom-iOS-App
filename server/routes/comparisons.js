@@ -299,7 +299,19 @@ function buildMetricsFromData(data, company) {
     dividend: {
       dividend_yield: pct(data.dividend_yield || null),
       payout_ratio: pct(data.payout_ratio || null),
-      dividend_per_share: r(data.dividend_per_share || data.eps ? (data.eps * (data.payout_ratio || 0)) : null)
+      // Prefer the reported figure; only derive it when it is absent.
+      //
+      // The previous expression was:
+      //   r(data.dividend_per_share || data.eps ? (data.eps * (...)) : null)
+      // `||` binds tighter than `?:`, so the condition was
+      // `(dividend_per_share || eps)` and the true-branch ignored
+      // dividend_per_share entirely — the reported value was never used, and a
+      // null eps produced 0 instead of null.
+      dividend_per_share: data.dividend_per_share != null
+        ? r(data.dividend_per_share)
+        : (data.eps != null && data.payout_ratio != null
+          ? r(data.eps * data.payout_ratio)
+          : null)
     },
     market: {
       market_cap: company ? company.market_cap : null,

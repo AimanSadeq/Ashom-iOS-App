@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { PieChart, Play, Target } from 'lucide-react';
 import { Scatter, Doughnut } from 'react-chartjs-2';
 import PageHeader from '../../components/shared/PageHeader';
+import { DataNotice } from '../../components/shared/DataNotice';
 import LoadingState from '../../components/shared/LoadingState';
 import ErrorState from '../../components/shared/ErrorState';
 import useApi from '../../hooks/useApi';
@@ -174,13 +175,43 @@ export default function OptimizerPage() {
     if (selectedAssets.length < 2) return;
     setRunning(true); setRunError(null);
     try {
+      // The endpoint takes `symbols` and a `constraints` object; sending
+      // `assets` produced "Required: symbols (array of at least 2 symbols)".
       const res = await quant.optimize({
-        assets: selectedAssets,
-        minWeight: parseFloat(minWeight) / 100,
-        maxWeight: parseFloat(maxWeight) / 100,
-        riskTolerance,
+        symbols: selectedAssets,
+        range: '3Y',
+        constraints: {
+          minWeight: parseFloat(minWeight) / 100,
+          maxWeight: parseFloat(maxWeight) / 100,
+        },
       });
-      setResults(res);
+
+      const d = res?.data || {};
+      // Risk tolerance selects which optimal portfolio to present:
+      // conservative -> minimum variance, otherwise the tangency (max-Sharpe)
+      // portfolio. Both are already computed server-side.
+      const chosen = riskTolerance === 'conservative'
+        ? (d.minVariance || d.tangency)
+        : (d.tangency || d.minVariance);
+
+      setResults({
+        expectedReturn: chosen?.expectedReturn,
+        risk:           chosen?.volatility,
+        sharpe:         chosen?.sharpe,
+        // The chart plots {x, y} in percent; the API returns
+        // {expectedReturn, volatility} as decimals.
+        frontier: (d.frontier || [])
+          .filter(p => p && p.volatility != null && p.expectedReturn != null)
+          .map(p => ({
+            x: +(p.volatility * 100).toFixed(2),
+            y: +(p.expectedReturn * 100).toFixed(2),
+          })),
+        weights: (chosen?.weights || []).map((w, i) => ({
+          symbol: d.symbols?.[i] || selectedAssets[i],
+          name:   d.individualStats?.[i]?.company_name || d.symbols?.[i] || selectedAssets[i],
+          weight: w,
+        })),
+      });
     } catch (err) { setRunError(err.message); }
     finally { setRunning(false); }
   }
@@ -188,6 +219,7 @@ export default function OptimizerPage() {
   return (
     <div style={sty.page}>
       <PageHeader title="Portfolio Optimizer" subtitle="Mean-variance optimization" backTo="/quant" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
 
       <div style={sty.body}>
         {/* Asset selector */}

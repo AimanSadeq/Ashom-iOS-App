@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Calendar, Bell, BellOff } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 
 const EARNINGS_DATA = [
   { company: 'Saudi Aramco', ticker: '2222.SR', country: 'SA', date: '2026-04-15', quarter: 'Q1 2026', expectedEPS: 2.85 },
@@ -95,6 +96,7 @@ export default function EarningsCalendarPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Earnings Calendar" subtitle="Upcoming GCC Reports" backTo="/analytics" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="demo" /></div>
 
       {/* Month selector */}
       <div

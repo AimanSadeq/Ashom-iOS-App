@@ -43,11 +43,9 @@ async function requireAuth(req, res, next) {
   }
   var token = authHeader.replace('Bearer ', '');
 
-  // Demo account
-  if (token === 'demo-token') {
-    req.user = { id: 'demo-user-id', email: 'demo@vifm.com', user_metadata: { full_name: 'Demo User' } };
-    return next();
-  }
+  // NOTE: there is deliberately no demo/bypass token here. Any static string
+  // accepted as a session becomes a public credential the moment it ships in
+  // client code. Every request must present a real Supabase JWT.
 
   if (!supabase) {
     return res.status(503).json({ success: false, error: 'Auth service not configured' });

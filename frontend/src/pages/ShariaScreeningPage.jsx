@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Shield, Check, X, AlertTriangle, ChevronDown, ChevronUp, Search } from 'lucide-react';
 
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 import LoadingState from '../components/shared/LoadingState';
 import ErrorState from '../components/shared/ErrorState';
 import useApi from '../hooks/useApi';
@@ -175,6 +176,7 @@ export default function ShariaScreeningPage() {
   if (loading) return (
     <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <PageHeader title="Sharia Screening" subtitle="Islamic Finance Compliance" backTo="/markets" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
       <LoadingState message="Screening companies..." />
     </div>
   );

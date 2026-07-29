@@ -153,10 +153,14 @@ export const analyst = {
 // Quant
 export const quant = {
   companies: () => request('/api/quant/companies'),
-  priceHistory: (symbol) => request(`/api/quant/price-history/${symbol}`),
-  factorReturns: () => request('/api/quant/factor-returns'),
-  macroData: () => request('/api/quant/macro-data'),
-  correlationMatrix: () => request('/api/quant/correlation-matrix'),
+  priceHistory: (symbol, range = '1Y') => request(`/api/quant/price-history/${symbol}?range=${range}`),
+  factorReturns: (range = '5Y') => request(`/api/quant/factor-returns?range=${range}`),
+  macroData: (range = '5Y') => request(`/api/quant/macro-data?range=${range}`),
+  // The endpoint requires a `symbols` query param; this used to send none, so
+  // it always returned 400.
+  correlationMatrix: (symbols, range = '1Y') =>
+    request(`/api/quant/correlation-matrix?symbols=${encodeURIComponent((symbols || []).join(','))}&range=${range}`),
+  stressTest: (data) => request('/api/quant/stress-test', { method: 'POST', body: JSON.stringify(data) }),
   factorModel: (data) => request('/api/quant/factor-model', { method: 'POST', body: JSON.stringify(data) }),
   regression: (data) => request('/api/quant/regression', { method: 'POST', body: JSON.stringify(data) }),
   var: (data) => request('/api/quant/var', { method: 'POST', body: JSON.stringify(data) }),

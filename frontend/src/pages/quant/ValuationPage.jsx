@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Calculator, Play } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
+import { DataNotice } from '../../components/shared/DataNotice';
 import { quant } from '../../services/api';
 
 /* ── constants ──────────────────────────────────────── */
@@ -125,8 +126,73 @@ export default function ValuationPage() {
       for (const [k, v] of Object.entries(inputs)) {
         numericInputs[k] = parseFloat(v) || 0;
       }
-      const res = await quant.valuation({ model: tool, ...numericInputs });
-      setResults(res);
+      // The endpoint expects {method, params}, not {model, ...flatInputs}.
+      // It also expects rates as decimals, while these fields collect whole
+      // percentages. Both mismatches made every run return HTTP 400.
+      const pct = (v) => (Number(v) || 0) / 100;
+      const n = (v) => Number(v) || 0;
+
+      const METHOD = { dcf: 'dcf', gordon: 'ddm', multistage: 'multiStageDDM', residual: 'residualIncome', altman: 'altman' };
+      let params;
+
+      if (tool === 'dcf') {
+        // The form collects a single FCF plus a growth rate; the endpoint wants
+        // an explicit projection series.
+        const years = Math.max(1, Math.round(n(numericInputs.projectionYears) || 5));
+        const g = pct(numericInputs.growthRate);
+        const base = n(numericInputs.freeCashFlow);
+        params = {
+          freeCashFlows: Array.from({ length: years }, (_, i) => base * Math.pow(1 + g, i + 1)),
+          wacc: pct(numericInputs.discountRate),
+          terminalGrowthRate: pct(numericInputs.terminalGrowth),
+          sharesOutstanding: n(numericInputs.sharesOutstanding),
+        };
+      } else if (tool === 'gordon') {
+        params = {
+          currentDividend: n(numericInputs.dividend),
+          growthRate: pct(numericInputs.growthRate),
+          requiredReturn: pct(numericInputs.requiredReturn),
+        };
+      } else if (tool === 'multistage') {
+        params = {
+          currentDividend: n(numericInputs.dividend),
+          stages: [
+            { years: Math.max(1, Math.round(n(numericInputs.highGrowthYears) || 5)), growthRate: pct(numericInputs.highGrowth) },
+          ],
+          requiredReturn: pct(numericInputs.requiredReturn),
+          terminalGrowthRate: pct(numericInputs.stableGrowth),
+        };
+      } else if (tool === 'residual') {
+        params = {
+          bookValue: n(numericInputs.bookValue),
+          roe: pct(numericInputs.roe),
+          costOfEquity: pct(numericInputs.costOfEquity),
+          fadeYears: 5,
+          terminalROE: pct(numericInputs.growthRate),
+        };
+      } else {
+        params = {
+          workingCapital: n(numericInputs.workingCapital),
+          retainedEarnings: n(numericInputs.retainedEarnings),
+          ebit: n(numericInputs.ebit),
+          marketCap: n(numericInputs.marketCap),
+          totalDebt: n(numericInputs.totalLiabilities),
+          totalAssets: n(numericInputs.totalAssets),
+          sales: n(numericInputs.revenue),
+        };
+      }
+
+      const res = await quant.valuation({ method: METHOD[tool], params });
+      const v = res?.data?.valuation || {};
+
+      setResults({
+        // Each model names its output differently.
+        intrinsicValue: v.pricePerShare ?? v.fairValue ?? v.valuePerShare ?? v.intrinsicValue ?? null,
+        zScore: v.zScore ?? v.score ?? null,
+        details: Object.fromEntries(
+          Object.entries(v).filter(([, val]) => typeof val === 'number' || typeof val === 'string')
+        ),
+      });
     } catch (err) { setRunError(err.message); }
     finally { setRunning(false); }
   }
@@ -136,6 +202,7 @@ export default function ValuationPage() {
   return (
     <div style={s.page}>
       <PageHeader title="Valuation Tools" subtitle="Intrinsic value models" backTo="/quant" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
 
       <div style={s.body}>
         {/* Tool selector */}

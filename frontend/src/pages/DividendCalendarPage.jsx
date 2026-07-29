@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { DollarSign, Wallet } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 
 const DIVIDENDS = [
   { company: 'Saudi Aramco', ticker: '2222.SR', country: 'SA', exDate: '2026-04-14', amount: 0.3105, currency: 'SAR', yield: 4.2, payDate: '2026-05-05' },
@@ -57,6 +58,7 @@ export default function DividendCalendarPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Dividend Calendar" subtitle="Upcoming Ex-Dividend Dates" backTo="/portfolio" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="demo" /></div>
 
       {/* Month selector */}
       <div className="flex gap-2 px-5 py-3">

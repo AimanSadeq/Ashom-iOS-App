@@ -56,8 +56,24 @@ const isSupabaseEnabled = () => {
   return supabase !== null && supabaseAdmin !== null;
 };
 
+// Create a short-lived client bound to one user's access token.
+//
+// Use this instead of mutating the shared `supabase` client with setSession().
+// The shared client is a single instance used by every concurrent request, so
+// calling setSession()/signOut() on it leaks one caller's session into another
+// caller's request. A per-request client also runs under that user's identity,
+// so Row Level Security applies — unlike supabaseAdmin, which bypasses it.
+const createUserClient = (accessToken) => {
+  if (!hasValidCredentials || !accessToken) return null;
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+};
+
 module.exports = {
   supabase,
   supabaseAdmin,
-  isSupabaseEnabled
+  isSupabaseEnabled,
+  createUserClient
 };

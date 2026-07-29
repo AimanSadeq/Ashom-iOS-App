@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 
 const CENTRAL_BANKS = [
   { country: 'Saudi Arabia', flag: '\u{1F1F8}\u{1F1E6}', bank: 'SAMA', rate: 5.50, prevRate: 5.50, lastChange: '2025-09-18', history: [5.00, 5.25, 5.50, 5.75, 5.50] },
@@ -55,6 +56,7 @@ export default function CentralBankRatesPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Central Bank Rates" subtitle="GCC Monetary Policy" backTo="/markets" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="demo" /></div>
 
       {/* Average rate summary */}
       <div

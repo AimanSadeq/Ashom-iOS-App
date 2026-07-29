@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { RefreshCw, Gem, Droplets, FlaskConical, Sparkles, Fuel, Flame, Pin, ChevronRight } from 'lucide-react';
 
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 import LoadingState from '../components/shared/LoadingState';
 import ErrorState  from '../components/shared/ErrorState';
 import { markets } from '../services/api';
@@ -159,6 +160,7 @@ export default function MetalsPage() {
   if (loading && !commodities) return (
     <div className="animate-fade-in">
       <PageHeader title="Precious Metals & Oil" subtitle="Live Prices" backTo="/" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="fallback" /></div>
       <LoadingState message="Fetching live prices..." />
     </div>
   );

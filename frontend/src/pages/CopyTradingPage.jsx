@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Users, Copy, Check, Shield, TrendingUp, ChevronDown, ChevronUp, BadgeCheck } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 
 /* ── Mock investor data ── */
 const INVESTORS = [
@@ -247,6 +248,7 @@ export default function CopyTradingPage() {
   return (
     <div className="animate-fade-in pb-8">
       <PageHeader title="Copy Trading" subtitle="Mirror Top Investors" backTo="/" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="demo" /></div>
 
       {/* ── Top Performers Banner ── */}
       <div className="px-5 pt-5 pb-2">

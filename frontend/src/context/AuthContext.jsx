@@ -9,32 +9,25 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    if (token) {
-      auth.getUser()
-        .then(res => {
-          setUser(res.user || res);
-        })
-        .catch(() => {
-          localStorage.removeItem('auth_token');
-        })
-        .finally(() => setLoading(false));
-    } else {
-      // Demo user fallback — set demo token so preferences sync works
-      localStorage.setItem('auth_token', 'demo-token');
-      setUser({
-        name: 'Aiman Sadeq',
-        initials: 'AS',
-        email: 'demo@vifm.com',
-        title: 'VP Analyst',
-        level: 4,
-        rank: 'VP',
-        xp: 530,
-        xpMax: 900,
-        streak: 2,
-        missions: '4/25',
-      });
+
+    // No token means signed out. It must NOT mean "mint one and pretend".
+    // This branch previously wrote a literal 'demo-token' that the server
+    // accepted as a valid — and administrative — session.
+    if (!token) {
+      setUser(null);
       setLoading(false);
+      return;
     }
+
+    auth.getUser()
+      .then(res => {
+        setUser(res.user || res);
+      })
+      .catch(() => {
+        localStorage.removeItem('auth_token');
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const login = async (email, password) => {

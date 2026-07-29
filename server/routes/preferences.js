@@ -10,11 +10,8 @@ async function requireAuth(req, res, next) {
 
   const token = authHeader.replace('Bearer ', '');
 
-  // Demo token shortcut
-  if (token === 'demo-token') {
-    req.userId = 'demo-user-id';
-    return next();
-  }
+  // NOTE: no demo-token shortcut. It previously mapped every anonymous caller
+  // onto the single 'demo-user-id' record, so all users shared one row.
 
   // Supabase token validation
   if (!supabase) return res.status(503).json({ error: 'Auth not configured' });

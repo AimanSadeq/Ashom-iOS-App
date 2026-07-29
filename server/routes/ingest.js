@@ -17,7 +17,7 @@ const router  = express.Router();
 const multer  = require('multer');
 const XLSX    = require('xlsx');
 const path    = require('path');
-const fs      = require('fs');
+const crypto  = require('crypto');
 const supabaseService = require('../supabaseService');
 
 // ── Multer: store uploads in memory (max 20MB) ──────────────────
@@ -42,13 +42,38 @@ const upload = multer({
 });
 
 // ── Admin auth middleware ────────────────────────────────────────
+//
+// There is no hardcoded fallback password. The previous
+// `process.env.ADMIN_PASSWORD || 'vifm-admin-2025'` meant that whenever the
+// environment variable was unset, the entire ingestion API was protected by a
+// credential published in this source file. If ADMIN_PASSWORD is absent the
+// endpoints now refuse all requests rather than accepting a known secret.
 function requireAdmin(req, res, next) {
-  const adminPassword = process.env.ADMIN_PASSWORD || 'vifm-admin-2025';
+  const adminPassword = process.env.ADMIN_PASSWORD;
+
+  if (!adminPassword) {
+    console.error('ADMIN_PASSWORD is not configured — refusing admin request.');
+    return res.status(503).json({ error: 'Admin access is not configured on this server.' });
+  }
+
   const provided = req.headers['x-admin-password'] || req.body?.adminPassword;
-  if (!provided || provided !== adminPassword) {
-    return res.status(401).json({ error: 'Unauthorized. Invalid admin password.' });
+
+  if (!provided || !timingSafeEqualStr(String(provided), adminPassword)) {
+    return res.status(401).json({ error: 'Unauthorized.' });
   }
   next();
+}
+
+// Constant-time comparison so response latency doesn't leak the password.
+function timingSafeEqualStr(a, b) {
+  const bufA = Buffer.from(a, 'utf8');
+  const bufB = Buffer.from(b, 'utf8');
+  if (bufA.length !== bufB.length) {
+    // Still burn a comparison to keep timing uniform for wrong-length inputs.
+    crypto.timingSafeEqual(bufA, bufA);
+    return false;
+  }
+  return crypto.timingSafeEqual(bufA, bufB);
 }
 
 // ── Text chunker: splits text into ~500-word chunks ─────────────

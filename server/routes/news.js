@@ -126,6 +126,66 @@ async function parseFeed(feedConfig, category) {
 }
 
 /**
+ * Reject anything that isn't a plain public http(s) URL.
+ *
+ * Note: this blocks addresses that are literally private. A hostname that
+ * resolves to a private address via DNS still gets through (DNS rebinding).
+ * Closing that fully requires resolving the host and pinning the socket to the
+ * validated IP; if this endpoint ever handles untrusted input at scale, route
+ * it through an egress proxy with an allowlist instead.
+ */
+function validateExternalUrl(rawUrl) {
+  let parsed;
+  try {
+    parsed = new URL(rawUrl);
+  } catch (e) {
+    return { ok: false, error: 'Invalid URL provided' };
+  }
+
+  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+    return { ok: false, error: 'Only http and https URLs are supported' };
+  }
+
+  const host = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
+
+  // Loopback / link-local / unspecified hostnames
+  if (
+    host === 'localhost' ||
+    host.endsWith('.localhost') ||
+    host.endsWith('.internal') ||
+    host.endsWith('.local') ||
+    host === '::1' ||
+    host === '0.0.0.0'
+  ) {
+    return { ok: false, error: 'URL host is not permitted' };
+  }
+
+  // IPv4 literals in private, loopback, link-local, or CGNAT ranges
+  const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (ipv4) {
+    const [a, b] = [parseInt(ipv4[1], 10), parseInt(ipv4[2], 10)];
+    const isPrivate =
+      a === 10 ||
+      a === 127 ||
+      a === 0 ||
+      (a === 169 && b === 254) ||            // link-local + cloud metadata
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) ||
+      (a === 100 && b >= 64 && b <= 127);    // CGNAT
+    if (isPrivate) {
+      return { ok: false, error: 'URL host is not permitted' };
+    }
+  }
+
+  // IPv6 unique-local (fc00::/7) and link-local (fe80::/10)
+  if (/^(fc|fd|fe8|fe9|fea|feb)/i.test(host) && host.includes(':')) {
+    return { ok: false, error: 'URL host is not permitted' };
+  }
+
+  return { ok: true };
+}
+
+/**
  * Strip HTML tags from text
  */
 function stripHtml(html) {
@@ -481,13 +541,18 @@ router.get('/article', async (req, res) => {
       });
     }
 
-    // Basic URL validation
-    try {
-      new URL(url);
-    } catch (e) {
+    // SSRF guard.
+    //
+    // `new URL(url)` only checks syntax. This endpoint makes a server-side
+    // request to a caller-supplied address, so without a scheme check and a
+    // private-address block it can be used to reach cloud metadata services
+    // (169.254.169.254), loopback, and anything else inside the deployment
+    // network — and return the response body to the caller.
+    const validation = validateExternalUrl(url);
+    if (!validation.ok) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid URL provided'
+        error: validation.error
       });
     }
 

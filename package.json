@@ -9,9 +9,9 @@
     "build": "cd frontend && npm install && CI=false npm run build",
     "init-db": "node server/initDatabase.js",
     "seed-db": "node server/seedDatabase.js",
-    "lint": "eslint server/**/*.js",
-    "lint:fix": "eslint server/**/*.js --fix",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint server",
+    "lint:fix": "eslint server --fix",
+    "test": "node tests/smoke.mjs",
     "ios:sync": "npx cap sync ios",
     "ios:open": "npx cap open ios",
     "ios:run": "npx cap run ios"
@@ -63,7 +63,7 @@
     "typescript": "^6.0.2"
   },
   "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=20.0.0 <23.0.0",
+    "npm": ">=9.0.0"
   }
 }

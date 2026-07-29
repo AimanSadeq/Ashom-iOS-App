@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { ShieldAlert, BarChart3, Grid3X3, Zap, Play } from 'lucide-react';
 import { Radar } from 'react-chartjs-2';
 import PageHeader from '../../components/shared/PageHeader';
+import { DataNotice } from '../../components/shared/DataNotice';
 import LoadingState from '../../components/shared/LoadingState';
 import ErrorState from '../../components/shared/ErrorState';
 import useApi from '../../hooks/useApi';
@@ -176,15 +177,42 @@ export default function RiskAnalyticsPage() {
     );
   }
 
+  // Unwrap a value that may be a plain number or an object wrapper such as
+  // { var: 0.03 } / { maxDrawdown: 0.21 } / { beta: 1.4 }.
+  function num(value, key) {
+    if (value == null) return null;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'object' && key && typeof value[key] === 'number') return value[key];
+    return null;
+  }
+
   async function runRiskMetrics() {
     if (!company) return;
     setRunning(true); setRunError(null);
     try {
-      const [metrics, varData] = await Promise.all([
-        quant.riskMetrics({ company }),
-        quant.var({ company }),
+      // The API takes `symbol`, not `company`, and nests its payload under
+      // data.metrics. Both calls used to 400 with "Required: symbol".
+      const [metricsRes, varRes] = await Promise.all([
+        quant.riskMetrics({ symbol: company, range: '1Y' }),
+        quant.var({ symbol: company, method: 'historical', confidence: 0.95 }),
       ]);
-      setRiskResults({ ...metrics, ...varData });
+
+      const m = metricsRes?.data?.metrics || {};
+      const v = varRes?.data || {};
+
+      // Flatten into the shape this page renders.
+      setRiskResults({
+        var95:       num(v.var, 'var') ?? num(m.var95, 'var'),
+        cvar95:      num(v.cvar, 'cvar'),
+        sharpe:      num(m.sharpe),
+        sortino:     num(m.sortino),
+        treynor:     num(m.treynor),
+        infoRatio:   num(m.informationRatio),
+        // maxDrawdown arrives as { maxDrawdown, peakIndex, ... }. Rendering the
+        // object directly produced "NaN%".
+        maxDrawdown: num(m.maxDrawdown, 'maxDrawdown'),
+        volatility:  num(m.annualizedVolatility),
+      });
     } catch (err) { setRunError(err.message); }
     finally { setRunning(false); }
   }
@@ -193,8 +221,12 @@ export default function RiskAnalyticsPage() {
     if (selectedCompanies.length < 2) return;
     setRunning(true); setRunError(null);
     try {
-      const res = await quant.riskMetrics({ companies: selectedCompanies, type: 'correlation' });
-      setCorrResults(res);
+      // Correlation has its own endpoint; it was never a mode of risk-metrics.
+      const res = await quant.correlationMatrix(selectedCompanies, '1Y');
+      setCorrResults({
+        matrix: res?.data?.correlationMatrix || null,
+        labels: res?.data?.symbols || selectedCompanies,
+      });
     } catch (err) { setRunError(err.message); }
     finally { setRunning(false); }
   }
@@ -203,8 +235,8 @@ export default function RiskAnalyticsPage() {
     if (!company) return;
     setRunning(true); setRunError(null);
     try {
-      const res = await quant.riskMetrics({ company, scenario, type: 'stress' });
-      setStressResults(res);
+      const res = await quant.stressTest({ symbol: company, scenario, range: '3Y' });
+      setStressResults(res?.data || null);
     } catch (err) { setRunError(err.message); }
     finally { setRunning(false); }
   }
@@ -212,6 +244,7 @@ export default function RiskAnalyticsPage() {
   return (
     <div style={s.page}>
       <PageHeader title="Risk Analytics" subtitle="Risk measurement and stress testing" backTo="/quant" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
 
       {/* Tabs */}
       <div style={s.tabBar}>

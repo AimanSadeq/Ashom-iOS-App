@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Info, ArrowUpDown, Filter, ArrowRightLeft } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 
 const CROSS_LISTINGS = [
   {
@@ -80,6 +81,7 @@ export default function CrossListingPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Cross-Listings" subtitle="Multi-Exchange GCC Stocks" backTo="/markets" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="demo" /></div>
 
       {/* Info card */}
       <div className="mx-4 mt-4 p-3 rounded-lg flex items-start gap-2" style={{ background: 'var(--blue-light)', border: '1px solid var(--border)' }}>

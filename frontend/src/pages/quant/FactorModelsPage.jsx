@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { Play, Layers, Info } from 'lucide-react';
 import { Bar } from 'react-chartjs-2';
 import PageHeader from '../../components/shared/PageHeader';
+import { DataNotice } from '../../components/shared/DataNotice';
 import LoadingState from '../../components/shared/LoadingState';
 import ErrorState from '../../components/shared/ErrorState';
 import useApi from '../../hooks/useApi';
@@ -149,8 +150,40 @@ export default function FactorModelsPage() {
     setRunning(true);
     setRunError(null);
     try {
-      const res = await quant.factorModel({ company, model, range });
-      setResults(res);
+      // The endpoint takes `symbol`, not `company`, and returns its regression
+      // under data.regression. This used to 400 with
+      // "Required fields: symbol, model".
+      const res = await quant.factorModel({ symbol: company, model, range });
+      const d = res?.data || {};
+      const reg = d.regression || {};
+      const coeffs = reg.coefficients || [];
+
+      // coefficients[0] is the intercept (alpha); the rest are factor loadings
+      // in the order the model sends them.
+      const FACTOR_NAMES = {
+        capm:    ['Market'],
+        ff3:     ['Market', 'SMB', 'HML'],
+        ff5:     ['Market', 'SMB', 'HML', 'RMW', 'CMA'],
+        carhart: ['Market', 'SMB', 'HML', 'MOM'],
+      };
+      const names = FACTOR_NAMES[model] || [];
+
+      setResults({
+        rSquared:      reg.rSquared,
+        adjRSquared:   reg.adjRSquared,
+        fStat:         reg.fStat,
+        durbinWatson:  reg.durbinWatson,
+        observations:  d.observations,
+        alpha:         coeffs[0],
+        // CAPM additionally returns a dedicated beta object.
+        beta:          typeof reg.beta === 'object' ? reg.beta?.beta : coeffs[1],
+        factors: names.map((name, i) => ({
+          name,
+          loading: coeffs[i + 1],
+          tStat:   (reg.tStats || [])[i + 1],
+          pValue:  (reg.pValues || [])[i + 1],
+        })).filter(f => f.loading != null),
+      });
     } catch (err) {
       setRunError(err.message);
     } finally {
@@ -161,6 +194,7 @@ export default function FactorModelsPage() {
   return (
     <div style={s.page}>
       <PageHeader title="Factor Models" subtitle="Multi-factor regression analysis" backTo="/quant" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
 
       <div style={s.body}>
         {/* Company selector */}

@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { Heart, MessageCircle, Share2, TrendingUp, Send, AtSign, X, Search, Users } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 import EmptyState from '../components/shared/EmptyState';
 
 /* ─── Mock Posts ─── */
@@ -308,6 +309,7 @@ export default function SocialFeedPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="Community" subtitle="GCC Market Discussions" backTo="/" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="demo" /></div>
 
       {/* ─── Tab Row ─── */}
       <div className="flex items-center gap-1.5 px-5 py-3" style={{ borderBottom: '1px solid var(--border)' }}>

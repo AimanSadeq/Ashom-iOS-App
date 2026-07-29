@@ -39,15 +39,25 @@ router.post('/', async (req, res) => {
                 .single();
 
             if (error) {
+                // Do not report success for a write that did not happen. This
+                // previously returned {success:true, stored:'local-only'}, so the
+                // UI showed an issued certificate that could never be verified.
                 console.error('Certificate save error:', error);
-                return res.json({ success: true, stored: 'local-only', message: 'Saved locally' });
+                return res.status(500).json({
+                    success: false,
+                    error: 'Could not store certificate. Please try again.'
+                });
             }
 
             return res.json({ success: true, stored: 'supabase', data });
         }
 
-        // No Supabase — just acknowledge
-        res.json({ success: true, stored: 'local-only' });
+        // Without a database there is nothing to verify against later, so
+        // issuing a certificate here would be issuing an unverifiable one.
+        res.status(503).json({
+            success: false,
+            error: 'Certificate storage is not configured on this server.'
+        });
     } catch (err) {
         console.error('Certificate POST error:', err);
         res.status(500).json({ success: false, error: 'Server error' });

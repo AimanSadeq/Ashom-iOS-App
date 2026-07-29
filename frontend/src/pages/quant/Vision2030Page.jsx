@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Landmark, Play, TrendingUp, TrendingDown } from 'lucide-react';
 import PageHeader from '../../components/shared/PageHeader';
+import { DataNotice } from '../../components/shared/DataNotice';
 import { quant } from '../../services/api';
 
 /* ── constants ──────────────────────────────────────── */
@@ -110,8 +111,63 @@ export default function Vision2030Page() {
     if (selectedSectors.length === 0) return;
     setRunning(true); setRunError(null);
     try {
-      const res = await quant.vision2030({ sectors: selectedSectors, metric: metricGroup });
-      setResults(res);
+      // The endpoint scores companies, not sectors: it takes either a single
+      // {symbol} or {batch:true}. Sending {sectors, metric} returned
+      // "Required: symbol (single) or batch: true".
+      //
+      // Run the batch scan, then aggregate the returned companies into the
+      // per-sector view this page renders.
+      const res = await quant.vision2030({ batch: true });
+      const all = res?.data?.companies || [];
+      const summary = res?.data?.summary || {};
+
+      // The SECTORS pills use Vision-2030 themed slugs, but company.sector
+      // holds GICS names. Without this mapping nothing ever matched.
+      const SECTOR_MAP = {
+        tourism:       ['Consumer Discretionary'],
+        technology:    ['Information Technology'],
+        mining:        ['Materials'],
+        manufacturing: ['Industrials'],
+        financial:     ['Financials'],
+        healthcare:    ['Healthcare'],
+        real_estate:   ['Real Estate'],
+        renewable:     ['Utilities'],
+        logistics:     ['Industrials'],
+        retail:        ['Consumer Staples', 'Consumer Discretionary'],
+      };
+      const wanted = new Set(
+        selectedSectors.flatMap(id => SECTOR_MAP[id] || []).map(s => s.toLowerCase())
+      );
+      const inScope = all.filter(c => wanted.has(String(c.sector || '').toLowerCase()));
+      const rows = inScope.length > 0 ? inScope : all;
+
+      const bySector = {};
+      rows.forEach(c => {
+        const key = c.sector || 'Other';
+        (bySector[key] = bySector[key] || []).push(c);
+      });
+
+      const sectors = Object.entries(bySector).map(([name, list]) => ({
+        name,
+        score: +(list.reduce((s, c) => s + (c.totalScore || 0), 0) / list.length).toFixed(1),
+        companyCount: list.length,
+      })).sort((a, b) => b.score - a.score);
+
+      const overall = rows.length
+        ? +(rows.reduce((s, c) => s + (c.totalScore || 0), 0) / rows.length).toFixed(1)
+        : null;
+
+      setResults({
+        overallScore: overall,
+        sectors,
+        metrics: summary.distribution || null,
+        insights: [
+          `${rows.length} companies scored${inScope.length ? ` across ${sectors.length} selected sector(s)` : ' (market-wide)'}.`,
+          summary.averageScore != null ? `Market-wide average score: ${summary.averageScore}.` : null,
+          sectors[0] ? `Highest-scoring sector: ${sectors[0].name} (${sectors[0].score}).` : null,
+          'Scores derive from sample financial data and are illustrative.',
+        ].filter(Boolean),
+      });
     } catch (err) { setRunError(err.message); }
     finally { setRunning(false); }
   }
@@ -119,6 +175,7 @@ export default function Vision2030Page() {
   return (
     <div style={s.page}>
       <PageHeader title="Vision 2030" subtitle="Saudi diversification analysis" backTo="/quant" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="sample" /></div>
 
       <div style={s.body}>
         {/* Hero card */}

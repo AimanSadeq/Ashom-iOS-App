@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Bell, BellOff, Calendar, Building2 } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 
 const IPOS = [
   { name: 'Arabian Mills', sector: 'Consumer Staples', exchange: 'TASI', date: '2026-04-25', priceRange: 'SAR 62-68', status: 'open', raised: '2.1B SAR' },
@@ -46,6 +47,7 @@ export default function IPOCalendarPage() {
   return (
     <div className="animate-fade-in">
       <PageHeader title="IPO Calendar" subtitle="Upcoming GCC Listings" backTo="/markets" />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="demo" /></div>
 
       {/* Filter chips */}
       <div className="flex gap-2 px-5 py-3 overflow-x-auto">

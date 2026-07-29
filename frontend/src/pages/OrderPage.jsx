@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 import PageHeader from '../components/shared/PageHeader';
+import { DataNotice } from '../components/shared/DataNotice';
 
 /* ───── Mock stock data ───── */
 const STOCKS = {
@@ -117,6 +118,7 @@ export default function OrderPage() {
   return (
     <div className="animate-fade-in" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <PageHeader title="Trade" subtitle={ticker} backTo={-1} />
+      <div style={{ padding: "12px 16px 0" }}><DataNotice variant="simulated" /></div>
 
       <div className="px-4 pt-4 space-y-4 pb-8">
         {/* ── Stock Header ── */}

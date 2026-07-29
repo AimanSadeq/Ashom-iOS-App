@@ -1,6 +1,6 @@
 # 📈 Ashom — GCC Financial Intelligence Platform
 
-**Mobile-first financial analysis & intelligence platform for the Gulf Cooperation Council (GCC) capital markets**, covering 820+ companies across Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, and Oman.
+**Mobile-first financial analysis & intelligence platform for the Gulf Cooperation Council (GCC) capital markets**, covering 180 companies across Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, and Oman.
 
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen)
 ![Node.js](https://img.shields.io/badge/Node.js-16%2B-339933?logo=node.js)
@@ -117,7 +117,7 @@ All endpoints are mounted under `/api` (see `server/index.js`):
 | Route group | Path | Purpose |
 |-------------|------|---------|
 | Auth | `/api/auth` | Signup, login, logout, current user, password reset (Supabase Auth + JWT) |
-| Companies | `/api/companies` | 820+ GCC companies, profiles, coverage stats |
+| Companies | `/api/companies` | 180 GCC companies + 6 exchange indexes, profiles, coverage stats |
 | Screener | `/api/screener` | Filter companies by financial criteria |
 | Comparisons | `/api/comparisons` | Create/retrieve saved comparisons |
 | Analytics | `/api/analytics` | Comparison types & financial metrics |
