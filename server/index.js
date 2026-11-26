@@ -236,8 +236,9 @@ const server = app.listen(PORT, HOST, () => {
   // Startup configuration checks. These previously failed silently at runtime:
   // an invalid Anthropic key surfaced only as a 401 inside an SSE stream, and a
   // missing ADMIN_PASSWORD fell back to a value hardcoded in the source.
-  if (!process.env.ADMIN_PASSWORD) {
-    console.warn('⚠️  ADMIN_PASSWORD is not set — /api/ingest/* admin endpoints are disabled.');
+  const adminProblem = require('./adminPassword').adminPasswordProblem();
+  if (adminProblem) {
+    console.warn(`⚠️  ${adminProblem}: /api/ingest/* admin endpoints are disabled.`);
   }
   if (!process.env.ANTHROPIC_API_KEY) {
     console.warn('⚠️  ANTHROPIC_API_KEY is not set — AI Analyst endpoints will return 503.');
